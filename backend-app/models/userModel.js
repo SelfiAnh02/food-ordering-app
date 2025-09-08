@@ -32,9 +32,9 @@ const userSchema = new mongoose.Schema(
       default: "customer",
     },
 
-    cartDate: {
+    cartData: {
       type: Object,
-      default: {}, // tanggal terakhir update cart
+      default: {}, 
     },
     orders: [
       {
@@ -45,7 +45,8 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
+  { minimize: false }
 );
 
 const userModel = mongoose.models.user || mongoose.model("User", userSchema);
