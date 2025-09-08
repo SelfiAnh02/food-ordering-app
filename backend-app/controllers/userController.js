@@ -4,13 +4,13 @@ import bcrypt from "bcryptjs";
 import validator from "validator";
 
 // 🔑 JWT helper
-const createToken = (id, role) => {
-  return jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: "7d" });
+const createToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 };
 
 // 🔐 Register User
 const registerUser = async (req, res) => {
-  const { name, phone, email, password, role } = req.body;
+  const { name, phone, email, password, } = req.body;
 
   try {
     // cek email/phone unik
@@ -39,24 +39,24 @@ const registerUser = async (req, res) => {
       phone,
       email,
       password: hashedPassword,
-      role: role || "customer", // default customer
     });
 
     const user = await newUser.save();
-    const token = createToken(user._id, user.role);
+    const token = createToken(user._id);
 
-    return res.status(201).json({ success: true, token, role: user.role, name: user.name });
+    return res.status(201).json({ success: true, token, name: user.name });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ success: false, message: error.message || "Internal server error" });
   }
 };
 
 // 🔓 Login User
 const loginUser = async (req, res) => {
-  const { email, phone, password } = req.body;
+  const { phone, password } = req.body;
 
   try {
-    const user = await userModel.findOne({ $or: [{ email }, { phone }] });
+    const user = await userModel.findOne({ phone });
     if (!user) {
       return res.status(400).json({ success: false, message: "User tidak ditemukan" });
     }
@@ -66,16 +66,16 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ success: false, message: "Password salah" });
     }
 
-    const token = createToken(user._id, user.role);
+    const token = createToken(user._id);
 
     return res.status(200).json({
       success: true,
       token,
-      role: user.role,
       name: user.name,
     });
   } catch (error) {
-    return res.status(500).json({ success: false, message: error.message || "Internal server error" });
+    console.log(error);
+    return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
