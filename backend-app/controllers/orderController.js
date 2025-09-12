@@ -14,7 +14,7 @@ const placeOrder = async (req, res) => {
         if (isCartEmpty) {
             return res.status(400).json({
                 success: false,
-                message: "Tidak ada item di keranjang, tidak bisa melakukan pemesanan"
+                message: "Tidak ada item di keranjang"
             });
         }
 
