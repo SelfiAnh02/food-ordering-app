@@ -2,17 +2,17 @@ import mongoose from "mongoose";
 
 const orderSchema = new mongoose.Schema(
   {
-    table: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Table", // relasi ke schema Table.js
-        required: true,
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User", // relasi ke schema User.js
+      required: true,
     },
-
+    
     items: [
       {
         product: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Product",
+          ref: "Product", // relasi ke schema Product.js
           required: true,
         },
         quantity: {
@@ -34,13 +34,19 @@ const orderSchema = new mongoose.Schema(
       enum: ["pending", "confirmed", "preparing", "completed", "cancelled"],
       default: "pending",
     },
+
+    tableNumber: {
+        type: String,
+        required: true,
+    },
+
     payment: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Payment", // relasi ke schema Payment
+      type: Boolean,
+      default: false // relasi ke schema Payment
     },
   },
   { timestamps: true }
 );
 
-const Order = mongoose.model("Order", orderSchema);
-export default Order;
+const OrderModel = mongoose.models.order || mongoose.model("Order", orderSchema);
+export default OrderModel;

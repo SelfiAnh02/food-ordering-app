@@ -27,19 +27,42 @@ const removeFromCart = async (req, res) => {
     try {
         let userData = await userModel.findById(req.user.id);
         let cartData = userData.cartData;
-        if (cartData[req.body.productId]>0) {
-            cartData[req.body.productId] -= 1;
+
+        // cek apakah cart kosong (tidak ada key atau semua value 0)
+        const isCartEmpty = !cartData || Object.values(cartData).every(qty => qty === 0);
+
+        if (isCartEmpty) {
+            return res.status(400).json({
+                success: false,
+                message: "Sudah tidak ada item di dalam keranjang"
+            });
         }
-        await userModel.findByIdAndUpdate(
-            req.user.id,
-            { cartData }
-        );  
-        res.status(200).json({success: true, message: "Item removed from cart successfully"});
+
+        // cek apakah productId ada di cart dan masih > 0
+        if (cartData[req.body.productId] > 0) {
+            cartData[req.body.productId] -= 1;
+        } else {
+            return res.status(400).json({
+                success: false,
+                message: "Produk ini sudah tidak ada di keranjang"
+            });
+        }
+
+        await userModel.findByIdAndUpdate(req.user.id, { cartData });
+
+        res.status(200).json({
+            success: true,
+            message: "Item removed from cart successfully"
+        });
     } catch (error) {
         console.log(error);
-        res.status(500).json({success: false, message: "Error lagi broow"});
+        res.status(500).json({
+            success: false,
+            message: "Error lagi broow"
+        });
     }
-}
+};
+
     
 // fetch user cart data 
 const getCart = async (req, res) => {
