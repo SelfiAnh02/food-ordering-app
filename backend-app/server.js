@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import productRouter from "./routes/productRoutes.js"; // add your router
 import userRouter from "./routes/userRoutes.js"; // import user routes
 import cartRouter from "./routes/cartRoutes.js"; // import cart routes
-
+import orderRouter from "./routes/orderRoutes.js"; // import order routes
 
 // Load environment variables
 
@@ -25,6 +25,8 @@ app.use("/api/products", productRouter);
 app.use("/images", express.static("uploads"));
 app.use("/api/users", userRouter); // add user routes
 app.use("/api/cart", cartRouter); // add cart routes
+app.use("/api/orders", orderRouter); // add order routes
+
 
 // Routes
 app.get("/", (req, res) => {
