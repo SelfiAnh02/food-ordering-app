@@ -28,6 +28,10 @@ const productSchema = new mongoose.Schema(
       type: String, // simpan URL/path gambar produk
       required: true,
     },
+    isActive: {
+      type: Boolean,
+      default: true, // by default produk aktif
+    },
   },
   { timestamps: true } // otomatis tambahkan createdAt & updatedAt
 );

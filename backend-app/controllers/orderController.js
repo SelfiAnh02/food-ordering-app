@@ -9,28 +9,46 @@ const placeOrder = async (req, res) => {
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
-        const cartData = user.cartData; // { productId: quantity }
-        const isCartEmpty = !cartData || Object.values(cartData).every(qty => qty === 0);
+
+        const cartData = user.cartData || {};
+        const isCartEmpty =
+        Object.keys(cartData).length === 0 ||
+        Object.values(cartData).every(item => !item || item.quantity === 0);
+
         if (isCartEmpty) {
             return res.status(400).json({
                 success: false,
-                message: "Tidak ada item di keranjang"
-            });
+                message: "Tidak ada item di keranjang",
+        });
         }
 
         // 2. Transform cartData to items array
-        const items = Object.entries(cartData).map(([productId, quantity]) => ({
+        const items = Object.entries(cartData).map(([productId, item]) => ({
             product: productId,
-            quantity
+            quantity: item.quantity,
+            note: item.note || "",
         }));
 
-        // 3. Calculate totalPrice
+        // 3. Calculate totalPrice + cek isActive
         let totalPrice = 0;
         for (const item of items) {
             const product = await productModel.findById(item.product);
-            if (product) {
-                totalPrice += product.price * item.quantity;
+
+            if (!product) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Produk dengan ID ${item.product} tidak ditemukan`,
+                });
             }
+
+            if (!product.isActive) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Produk "${product.name}" sudah tidak tersedia`,
+                });
+            }
+
+            totalPrice += product.price * item.quantity;
         }
 
         // 4. Create new order
@@ -39,22 +57,24 @@ const placeOrder = async (req, res) => {
             items,
             totalPrice,
             tableNumber: req.body.tableNumber,
+            orderType: req.body.orderType || "Dine-In",
         });
 
         await newOrder.save();
 
         // 5. Update user: push orderId ke field orders + kosongkan cart
         await userModel.findByIdAndUpdate(req.user.id, {
-            $push: { orders: newOrder._id }, // tambahkan id order ke array orders
-            $set: { cartData: {} }           // kosongkan cart
+            $push: { orders: newOrder._id },
+            $set: { cartData: {} },
         });
 
         res.status(200).json({ success: true, order: newOrder });
     } catch (error) {
-        console.log(error);
+        console.error(">>> ERROR placeOrder:", error);
         res.status(500).json({ success: false, error: "Internal Server Error" });
     }
-}
+};
+
 
 export { placeOrder };
 

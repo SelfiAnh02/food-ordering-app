@@ -40,6 +40,12 @@ const orderSchema = new mongoose.Schema(
         required: true,
     },
 
+    orderType: {
+      type: String,
+      enum: ["Dine-In", "Takeaway", "Delivery"],
+      default: "Dine-In", // Dine-In, Takeaway, Delivery
+    },
+    
     payment: {
       type: Boolean,
       default: false // relasi ke schema Payment
