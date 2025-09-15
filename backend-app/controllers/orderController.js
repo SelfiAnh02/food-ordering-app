@@ -2,6 +2,11 @@ import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js";
 import productModel from "../models/productModel.js";
 
+
+
+
+
+
 const placeOrder = async (req, res) => {
     try {
         // 1. Get user and cart data
@@ -29,7 +34,7 @@ const placeOrder = async (req, res) => {
             note: item.note || "",
         }));
 
-        // 3. Calculate totalPrice + cek isActive
+        // 3. Calculate totalPrice + cek stok
         let totalPrice = 0;
         for (const item of items) {
             const product = await productModel.findById(item.product);
@@ -41,15 +46,23 @@ const placeOrder = async (req, res) => {
                 });
             }
 
-            if (!product.isActive) {
+            if (product.stock <= 0) {
                 return res.status(400).json({
                     success: false,
-                    message: `Produk "${product.name}" sudah tidak tersedia`,
+                    message: `Produk "${product.name}" sudah habis stoknya`,
+                });
+            }
+
+            if (item.quantity > product.stock) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Stok "${product.name}" tidak mencukupi. Tersedia hanya ${product.stock} pcs`,
                 });
             }
 
             totalPrice += product.price * item.quantity;
         }
+
 
         // 4. Create new order
         const newOrder = new orderModel({
@@ -62,6 +75,11 @@ const placeOrder = async (req, res) => {
 
         await newOrder.save();
 
+        for (const item of items) {
+        await productModel.findByIdAndUpdate(item.product, {
+            $inc: { stock: -item.quantity }
+        });
+        }
         // 5. Update user: push orderId ke field orders + kosongkan cart
         await userModel.findByIdAndUpdate(req.user.id, {
             $push: { orders: newOrder._id },
@@ -74,6 +92,8 @@ const placeOrder = async (req, res) => {
         res.status(500).json({ success: false, error: "Internal Server Error" });
     }
 };
+
+
 
 
 export { placeOrder };

@@ -34,8 +34,41 @@ const listProducts = async (req, res) => {
     }
 };
 
-// remove product
+const editProduct = async (req, res) => {
+    try {
+        const product = await Product.findById(req.body.id);
 
+        if (!product) {
+            return res.status(404).json({ success: false, message: "Product not found" });
+        }
+
+        // update hanya field yang ada
+        if (req.body.name) product.name = req.body.name;
+        if (req.body.price) product.price = Number(req.body.price);
+        if (req.body.description) product.description = req.body.description;
+        if (req.body.category) product.category = req.body.category;
+        product.stock = req.body.stock !== undefined ? Number(req.body.stock) : product.stock;
+
+        // kalau ada file baru
+        if (req.file) {
+            if (product.image) {
+                fs.unlink(`uploads/${product.image}`, (err) => {
+                    if (err) console.error("Gagal hapus file lama:", err.message);
+                });
+            }
+            product.image = req.file.filename;
+        }
+
+        await product.save();
+
+        res.json({ success: true, message: "Product updated", product });
+    } catch (error) {
+        console.error(">>> ERROR editProduct:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// remove product
 const removeProduct = async (req, res) => {
     try {
         const product = await Product.findById(req.body.id);
@@ -53,39 +86,6 @@ const removeProduct = async (req, res) => {
     }
 };
 
-// set aktif / nonaktif produk secara langsung
-const setProductStatus = async (req, res) => {
-    try {
-        const { productId, isActive } = req.body; // ambil id & status dari body
-        // validasi input
-        if (typeof isActive !== "boolean") {
-            return res.status(400).json({
-                success: false,
-                message: "isActive harus berupa true atau false",
-            });
-        }
-
-        const product = await Product.findByIdAndUpdate(
-            productId,
-            { isActive },
-            { new: true }
-        );
-
-        if (!product) {
-            return res.status(404).json({ success: false, message: "Product not found" });
-        }
-
-        res.status(200).json({
-            success: true,
-            message: `Product berhasil ${isActive ? "diaktifkan" : "dinonaktifkan"}`,
-            productId,
-        });
-    } catch (error) {
-        console.error(">>> ERROR setProductStatus:", error);
-        res.status(500).json({ success: false, message: "Failed to update product status" });
-    }
-};
 
 
-
-export { addProduct, listProducts, removeProduct, setProductStatus };
+export { addProduct, listProducts, editProduct, removeProduct };

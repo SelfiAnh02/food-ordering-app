@@ -4,8 +4,9 @@ import { placeOrder } from "../controllers/orderController.js";
 
 
 const orderRouter = express.Router();
-
+// routes order (user)
 orderRouter.post("/place", authMiddleware, placeOrder);
+
 
 
 export default orderRouter;
