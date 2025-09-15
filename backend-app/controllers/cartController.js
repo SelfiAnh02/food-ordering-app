@@ -11,17 +11,29 @@ const addToCart = async (req, res) => {
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
-        // cek apakah productId valid & isActive
+        // cek apakah productId valid & stok masih ada
         const product = await productModel.findById(productId);
-        if (!product || !product.isActive) {
-            return res.status(400).json({ success: false, message: "Product not available for now" });
+        if (!product || product.stock <= 0) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Produk tidak tersedia (stok habis atau tidak ditemukan)" 
+            });
         }
 
         let cartData = user.cartData || {};
 
         if (!cartData[productId]) {
+            // kalau produk belum ada di cart
             cartData[productId] = { quantity: 1, note: note || "" };
         } else {
+            // cek dulu apakah jumlah di cart sudah mencapai stok
+            if (cartData[productId].quantity >= product.stock) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Jumlah produk di keranjang sudah melebihi stok tersedia"
+                });
+            }
+
             cartData[productId].quantity += 1;
 
             // kalau ada note baru dikirim, update note
@@ -92,35 +104,34 @@ const removeFromCart = async (req, res) => {
     }
 };
 
-
 // get user cart
 const getCart = async (req, res) => {
-  try {
-    const user = await userModel.findById(req.user.id);
+    try {
+        const user = await userModel.findById(req.user.id);
 
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+        if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        const cartData = user.cartData || {};
+
+        // kalau kosong langsung return array kosong
+        if (Object.keys(cartData).length === 0) {
+        return res.status(200).json({ success: true, cart: [] });
+        }
+
+        // ubah object cartData jadi array agar mudah diolah frontend
+        const cartItems = Object.entries(cartData).map(([productId, item]) => ({
+        productId,
+        quantity: item.quantity,
+        note: item.note || ""
+        }));
+
+        res.status(200).json({ success: true, cart: cartItems });
+    } catch (error) {
+        console.error(">>> ERROR getCart:", error);
+        res.status(500).json({ success: false, message: "Error getCart" });
     }
-
-    const cartData = user.cartData || {};
-
-    // kalau kosong langsung return array kosong
-    if (Object.keys(cartData).length === 0) {
-      return res.status(200).json({ success: true, cart: [] });
-    }
-
-    // ubah object cartData jadi array agar mudah diolah frontend
-    const cartItems = Object.entries(cartData).map(([productId, item]) => ({
-      productId,
-      quantity: item.quantity,
-      note: item.note || ""
-    }));
-
-    res.status(200).json({ success: true, cart: cartItems });
-  } catch (error) {
-    console.error(">>> ERROR getCart:", error);
-    res.status(500).json({ success: false, message: "Error getCart" });
-  }
 };
 
 
