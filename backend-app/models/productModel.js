@@ -16,21 +16,13 @@ const productSchema = new mongoose.Schema(
       required: true, // harga wajib diisi
     },
     category: {
-      type: String, // relasi ke Category
-      //ref: "Category",
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
       required: true,
     },
     stock: {
       type: Number,
       default: 0, // stok default 0
-    },
-    image: {
-      type: String, // simpan URL/path gambar produk
-      required: true,
-    },
-    isActive: {
-      type: Boolean,
-      default: true, // by default produk aktif
     },
   },
   { timestamps: true } // otomatis tambahkan createdAt & updatedAt
