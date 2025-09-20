@@ -2,8 +2,8 @@ import userModel from "../../models/userModel.js";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../../utils/auth.js";
 
-// LOGIN ADMIN 
-export const loginAdmin = async (req, res) => {
+// LOGIN STAFF
+export const loginStaff = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -24,4 +24,5 @@ export const loginAdmin = async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
+  
 };

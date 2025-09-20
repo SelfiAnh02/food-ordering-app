@@ -6,7 +6,8 @@ import cookieParser from "cookie-parser";
 import productRouter from "./routes/admin/productRoutes.js"; // add your router
 import orderRouter from "./routes/admin/orderRoutes.js"; // import order routes
 import userRouter from "./routes/admin/userRoutes.js"; // import admin user routes
-import authRouter from "./routes/admin/authRoutes.js"; // import admin auth routes
+import adminAuthRouter from "./routes/admin/authRoutes.js"; // import admin auth routes
+import staffAuthRouter from "./routes/staff/authRoutes.js"; // import staff auth routes
 import categoryRouter from "./routes/admin/categoryRoutes.js"; // import category routes
 
 // Load environment variables
@@ -24,7 +25,7 @@ app.use(cookieParser());
 connectDB();
 
 // API endpoints Admin
-app.use("/api/admin", authRouter);
+app.use("/api/admin", adminAuthRouter);
 app.use("/api/admin/users", userRouter);
 app.use("/api/admin/categories", categoryRouter);
 app.use("/api/admin/products", productRouter);
@@ -32,12 +33,13 @@ app.use("/api/admin/orders", orderRouter);
 
 
 // API endpoints Staff
+app.use("/api/staff", staffAuthRouter);
 app.use("/api/staff/categories", categoryRouter);
 app.use("/api/staff/products", productRouter);
 
 // API endpoints User
-app.use("/api/staff/categories", categoryRouter);
-app.use("/api/staff/products", productRouter);
+app.use("/api/categories", categoryRouter);
+app.use("/api/products", productRouter);
 app.use("/images", express.static("uploads"));
 app.use("/api/orders", orderRouter); // add order routes
 
