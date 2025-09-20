@@ -3,9 +3,9 @@ import Product from "../../models/productModel.js";
 // add product (tanpa handle file)
 export const createProduct = async (req, res) => {
   try {
-    const { name, description, price, category, stock } = req.body;
+    const { name, description, price, categoryId, stock } = req.body;
 
-    if (!name || !price || !category) {
+    if (!name || !price || !categoryId) {
       return res.status(400).json({
         success: false,
         message: "Name, price, and category are required",
@@ -16,13 +16,13 @@ export const createProduct = async (req, res) => {
       name,
       description,
       price,
-      category,
+      categoryId,
       stock: stock || 0,
     });
 
     await product.save();
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       message: "Product added successfully",
       data: product,
@@ -38,29 +38,47 @@ export const createProduct = async (req, res) => {
 
 
 // all product list
-export const listProducts = async (req, res) => {
-    try { 
-        const products = await Product.find().sort({ createdAt: -1 }); // terbaru dulu
-        res.status(200).json({ success: true, message: "Products fetched", products });
+export const getProducts = async (req, res) => {
+    try {
+        const { categoryId } = req.query;
+        let filter = {};
+
+        if (categoryId) {
+            filter = { categoryId: categoryId };
+        }
+
+        const products = await Product.find(filter).select("_id name price");
+        // console.log("products:", products);
+        res.status(200).json({
+            success: true,
+            message: categoryId 
+                ? `Products in category ${categoryId} fetched` 
+                : "All products fetched",
+            products
+        });
     } catch (error) {
         console.error("error:", error);
-        res.status(500).json({ success: false, message: "Failed to retrieve products" });
+        res.status(500).json({
+            success: false,
+            message: "Failed to retrieve products"
+        });
     }
 };
 
+
 // get product by category
-export const getProductsByCategory = async (req, res) => {
+export const getProductById = async (req, res) => {
     try {
-        const products = await Product.find({ category: req.params.categoryId }).sort({ createdAt: -1 });
-        res.status(200).json({ success: true, message: "Products fetched", products });
+        const product = await Product.findById(req.params.id).select("id name description price ");
+        res.status(200).json({ success: true, message: "Product fetched", product });
     } catch (error) {
         console.error("error:", error);
-        res.status(500).json({ success: false, message: "Failed to retrieve products" });
+        res.status(500).json({ success: false, message: "Failed to retrieve product" });
     }
 };
 
 // edit product 
-export const editProduct = async (req, res) => {
+export const updateProduct = async (req, res) => {
     try {
         const product = await Product.findById(req.params.id);
 
