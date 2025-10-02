@@ -4,7 +4,8 @@ import connectDB from "./config/db.js";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import productRouter from "./routes/admin/productRoutes.js"; // add your router
-import orderRouter from "./routes/admin/orderRoutes.js"; // import order routes
+import orderRouter from "./routes/user/orderRoutes.js"; // import order routes
+import staffOrderRouter from "./routes/staff/orderRoutes.js"; // import order routes
 import userRouter from "./routes/admin/userRoutes.js"; // import admin user routes
 import adminAuthRouter from "./routes/admin/authRoutes.js"; // import admin auth routes
 import staffAuthRouter from "./routes/staff/authRoutes.js"; // import staff auth routes
@@ -36,11 +37,11 @@ app.use("/api/admin/orders", orderRouter);
 app.use("/api/staff", staffAuthRouter);
 app.use("/api/staff/categories", categoryRouter);
 app.use("/api/staff/products", productRouter);
+app.use("/api/staff/orders", staffOrderRouter); // add order routes
 
 // API endpoints User
 app.use("/api/categories", categoryRouter);
 app.use("/api/products", productRouter);
-app.use("/images", express.static("uploads"));
 app.use("/api/orders", orderRouter); // add order routes
 
 
