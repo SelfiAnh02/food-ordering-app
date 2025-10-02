@@ -36,35 +36,37 @@ export const createProduct = async (req, res) => {
   }
 };
 
-
 // all product list
 export const getProducts = async (req, res) => {
-    try {
-        const { categoryId } = req.query;
-        let filter = {};
+  try {
+    const { categoryId, page = 1, limit = 10 } = req.query;
+    const filter = categoryId ? { categoryId } : {};
 
-        if (categoryId) {
-            filter = { categoryId: categoryId };
-        }
+    const products = await Product.find(filter)
+      .select("_id name price")
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
 
-        const products = await Product.find(filter).select("_id name price");
-        // console.log("products:", products);
-        res.status(200).json({
-            success: true,
-            message: categoryId 
-                ? `Products in category ${categoryId} fetched` 
-                : "All products fetched",
-            products
-        });
-    } catch (error) {
-        console.error("error:", error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to retrieve products"
-        });
-    }
+    const total = await Product.countDocuments(filter);
+
+    res.status(200).json({
+      success: true,
+      message: categoryId
+        ? `Products in category ${categoryId} fetched`
+        : "All products fetched",
+      // currentPage: parseInt(page),
+      // totalPages: Math.ceil(total / limit),
+      // totalItems: total,
+      products,
+    });
+  } catch (error) {
+    console.error("error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve products"
+    });
+  }
 };
-
 
 // get product by category
 export const getProductById = async (req, res) => {

@@ -1,5 +1,5 @@
 import express from "express";
-import { getProducts,getProductById } from "../../controllers/admin/productController.js";
+import { getProducts,getProductById } from "../../controllers/staff/productController.js";
 import { authStaff } from "../../middleware/staff/auth.js";
 
 

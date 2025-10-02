@@ -5,7 +5,7 @@ const orderSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User", // relasi ke schema User.js
-      required: true,
+      required: false,
     },
     
     items: [
@@ -31,7 +31,7 @@ const orderSchema = new mongoose.Schema(
     },
     orderStatus: {
       type: String,
-      enum: ["pending", "confirmed", "preparing", "completed", "cancelled"],
+      enum: ["pending", "confirmed", "delivered"],
       default: "pending",
     },
 
@@ -47,8 +47,18 @@ const orderSchema = new mongoose.Schema(
     },
     
     payment: {
-      type: Boolean,
-      default: false // relasi ke schema Payment
+      status: {
+        type: String,
+        enum: ["pending", "paid", "failed"],
+        default: "pending",
+      },
+      paymentId: String,
+      paymentUrl: String,
+    },
+
+    paymentDetails: {
+      method: { type: String, enum: ["cash", "qris", "edc"] },
+      paidAt: { type: Date },
     },
   },
   { timestamps: true }
