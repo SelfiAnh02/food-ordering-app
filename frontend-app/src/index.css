@@ -1,70 +1,104 @@
+/* src/index.css - Tailwind v4 */
 @import "tailwindcss";
 
+/* ================================
+   THEME COLOR VARIABLES
+==================================*/
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --brown-900: #5B3A29;
+  --brown-700: #8B5E3C;
+  --cream: #F7EFE7;
+  --beige: #D9C6B6;
+  --muted-green: #6AA78A;
+  --soft-teal: #6BC3C1;
+  --panel-border: rgba(0,0,0,0.15);
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
+/* ================================
+   GLOBAL ELEMENTS
+==================================*/
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  background-color: var(--cream);
+  color: var(--brown-900);
+  font-family: 'Inter', sans-serif;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* Small utility for rounded box borders */
+.panel {
+  border: 1px solid var(--panel-border);
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.03);
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+/* Subtle muted panel background */
+.panel-muted {
+  background: #f6f1ed; /* warm light bg */
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 9999px;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* Pill buttons (for table preview or tags) */
+.pill {
+  border: 1px solid rgba(0,0,0,0.18);
+  background: #fff;
+  border-radius: 12px;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+}
+
+/* ================================
+   HEADER (TOPBAR)
+==================================*/
+.app-header {
+  background: linear-gradient(180deg, var(--beige) 0%, var(--cream) 100%);
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  position: relative;
+  z-index: 30;
+}
+
+/* Ensure header doesn’t overlap sidebar or content */
+.app-header + .content-wrap {
+  margin-top: 18px;
+  padding-top: 6px;
+}
+/* jika ingin sidebar punya jarak tambahan dari header */
+.sidebar-below-header {
+  margin-top: 10px;
+}
+
+/* optional: buat header lebih 'penuh' lebarnya */
+.app-header .max-w-1200 {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+/* Search input focus polish */
+.panel-muted input:focus {
+  box-shadow: 0 0 0 4px rgba(139,94,60,0.06);
+  outline: none;
+}
+
+/* ================================
+   RESPONSIVE SIDEBAR HANDLING
+==================================*/
+@media (max-width: 768px) {
+  .sidebar-desktop {
+    display: none;
   }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
+  .content-wrap { flex-direction: column; }
+  .sidebar-below-header { width: 100%; margin-bottom: 12px; }
+}
+
+/* ================================
+   UTILITY WIDTHS
+==================================*/
+@media (min-width: 1280px) {
+  .max-w-\[1200px\] {
+    max-width: 1200px;
   }
 }
