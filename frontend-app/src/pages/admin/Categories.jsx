@@ -1,7 +1,27 @@
 // src/pages/admin/Categories.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { Pencil, Trash2, Plus, X } from "lucide-react";
-import { getCategories, createCategory, updateCategory, deleteCategory } from "../../services/categoryService";
+
+/**
+ * UI-only Categories page
+ * - Left and Right panels are siblings (NOT wrapped in a single panel div)
+ * - Left: table list (name, description, action icons) with right border
+ * - Right: Add / Edit form (same form) as its own panel
+ */
+
+const MOCK_CATEGORIES = [
+  { id: 1, name: "Coffee", description: "Minuman kopi, espresso, latte" },
+  { id: 2, name: "Tea", description: "Minuman teh: matcha, black, green" },
+  { id: 3, name: "Bakery", description: "Roti & pastry" },
+  { id: 4, name: "Beverages", description: "Minuman dingin & panas" },
+  { id: 5, name: "Snacks", description: "Makanan ringan" },
+  { id: 6, name: "Desserts", description: "Kue & makanan penutup" },
+  { id: 7, name: "Meals", description: "Makanan berat dan lauk" },
+];
+
+function nextId(list) {
+  return list.length === 0 ? 1 : Math.max(...list.map((x) => x.id)) + 1;
+}
 
 export default function Categories() {
   const [categories, setCategories] = useState([]);
@@ -14,23 +34,13 @@ export default function Categories() {
   const [mode, setMode] = useState("add");
   const [form, setForm] = useState({ id: null, name: "", description: "" });
 
-  // Load categories from API
-  const loadCategories = async () => {
-    setLoading(true);
-    try {
-      const res = await getCategories();
-      // sesuaikan jika API merespons dengan data field berbeda
-      setCategories(res.data);
-    } catch (err) {
-      console.error(err);
-      alert("Gagal memuat kategori.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadCategories();
+    // simulate load
+    const t = setTimeout(() => {
+      setCategories(MOCK_CATEGORIES);
+      setLoading(false);
+    }, 200);
+    return () => clearTimeout(t);
   }, []);
 
   const filtered = useMemo(() => {
@@ -38,7 +48,7 @@ export default function Categories() {
     if (!q) return categories;
     return categories.filter(
       (c) =>
-        String(c.id ?? c._id).includes(q) ||
+        String(c.id).includes(q) ||
         c.name?.toLowerCase().includes(q) ||
         c.description?.toLowerCase().includes(q)
     );
@@ -57,46 +67,36 @@ export default function Categories() {
 
   function fillFormForEdit(cat) {
     setMode("edit");
-    setForm({ id: cat._id, name: cat.name ?? "", description: cat.description ?? "" });
+    setForm({ id: cat.id, name: cat.name ?? "", description: cat.description ?? "" });
     document.getElementById("category-form")?.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
-  async function handleSubmit(e) {
+  function handleSubmit(e) {
     e.preventDefault();
     const name = form.name.trim();
     if (!name) return alert("Nama kategori wajib diisi.");
 
-    try {
-      if (mode === "add") {
-        const res = await createCategory({ name, description: form.description });
-        setCategories((s) => [res.data, ...s]);
-      } else {
-        const res = await updateCategory(form.id, { name, description: form.description });
-        setCategories((s) => s.map((c) => (c._id === form.id ? res.data : c)));
-      }
+    if (mode === "add") {
+      const id = nextId(categories);
+      const newCat = { id, name, description: form.description || "" };
+      setCategories((s) => [newCat, ...s]);
       resetForm();
       setCurrentPage(1);
-    } catch (err) {
-      console.error(err);
-      alert("Terjadi kesalahan saat menyimpan kategori.");
+    } else {
+      setCategories((s) => s.map((c) => (c.id === form.id ? { ...c, name, description: form.description || "" } : c)));
+      resetForm();
     }
   }
 
-  async function handleDelete(cat) {
+  function handleDelete(cat) {
     if (!confirm(`Hapus kategori "${cat.name}"?`)) return;
-    try {
-      await deleteCategory(cat._id);
-      setCategories((s) => {
-        const next = s.filter((x) => x._id !== cat._id);
-        const newPages = Math.max(1, Math.ceil(next.length / itemsPerPage));
-        if (currentPage > newPages) setCurrentPage(newPages);
-        return next;
-      });
-      if (mode === "edit" && form.id === cat._id) resetForm();
-    } catch (err) {
-      console.error(err);
-      alert("Gagal menghapus kategori.");
-    }
+    setCategories((s) => {
+      const next = s.filter((x) => x.id !== cat.id);
+      const newPages = Math.max(1, Math.ceil(next.length / itemsPerPage));
+      if (currentPage > newPages) setCurrentPage(newPages);
+      return next;
+    });
+    if (mode === "edit" && form.id === cat.id) resetForm();
   }
 
   useEffect(() => {
@@ -111,7 +111,7 @@ export default function Categories() {
       </div>
 
       <div className="flex gap-6">
-        {/* LEFT panel */}
+        {/* LEFT panel (separate sibling) */}
         <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 pr-6">
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
@@ -157,10 +157,10 @@ export default function Categories() {
 
                     <tbody>
                       {displayed.map((c) => (
-                        <tr key={c._id} className="border-b last:border-b-0 hover:bg-gray-50">
+                        <tr key={c.id} className="border-b last:border-b-0 hover:bg-gray-50">
                           <td className="p-4 align-top">
                             <div className="font-medium text-gray-800">{c.name}</div>
-                            <div className="text-xs text-gray-500 mt-1">ID: {c._id}</div>
+                            <div className="text-xs text-gray-500 mt-1">ID: {c.id}</div>
                           </td>
                           <td className="p-4 align-top text-gray-700">{c.description}</td>
                           <td className="p-4 align-top text-center">
@@ -187,7 +187,7 @@ export default function Categories() {
                   </table>
                 </div>
 
-                {/* Pagination controls */}
+                {/* Pagination controls (right-aligned) */}
                 <div className="flex justify-end items-center gap-3 mt-4">
                   <button
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
@@ -216,7 +216,7 @@ export default function Categories() {
           </div>
         </div>
 
-        {/* RIGHT panel */}
+        {/* RIGHT panel (separate sibling) */}
         <div className="w-96 bg-white rounded-2xl shadow-sm border border-gray-100">
           <div className="p-6" id="category-form">
             <div className="mb-3 flex items-center justify-between">
