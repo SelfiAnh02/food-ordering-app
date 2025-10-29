@@ -1,5 +1,5 @@
-// src/pages/admin/Dashboard.jsx
-import React from "react";
+import {  useSearchParams } from "react-router-dom";
+
 
 /* === Komponen kecil untuk card statistik === */
 const StatCard = ({ title, value, icon }) => (
@@ -62,23 +62,6 @@ const SalesChart = () => (
   </div>
 );
 
-/* === Preview meja === */
-const TablePreview = () => (
-  <div className="bg-white border border-amber-100 rounded-xl shadow-sm p-4">
-    <div className="text-sm font-medium text-[#7a4528] mb-3">Table Preview</div>
-    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-      {Array.from({ length: 15 }).map((_, i) => (
-        <button
-          key={i}
-          className="px-3 py-2 rounded-lg border border-amber-100 text-xs text-gray-700 bg-amber-50 hover:bg-[#FF8A00]/20 transition-colors"
-        >
-          No. {i + 1}
-        </button>
-      ))}
-    </div>
-  </div>
-);
-
 /* === Pesanan terbaru === */
 const RecentOrders = () => (
   <div className="bg-white border border-amber-100 rounded-xl shadow-sm p-4">
@@ -106,6 +89,8 @@ const RecentOrders = () => (
 
 /* === Halaman Dashboard === */
 export default function Dashboard() {
+ const [searchParams] = useSearchParams();
+  console.log(searchParams.get('table'));
   return (
     <div className="space-y-6">
       {/* Statistik utama */}
@@ -120,9 +105,6 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <SalesChart />
-        </div>
-        <div className="w-full md:max-w-[320px]">
-          <TablePreview />
         </div>
       </div>
 

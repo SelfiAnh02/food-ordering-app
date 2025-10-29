@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
-import { setUser } from "../services/authService";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -16,11 +15,10 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const res = await api.post("/api/admin/login", { email, password });
+      const res = await api.post("/admin/login", { email, password });
 
       if (res.data?.success) {
         // simpan info user di localStorage
-        setUser(res.data.user);
 
         // redirect sesuai role
         if (res.data.user.role === "admin") {

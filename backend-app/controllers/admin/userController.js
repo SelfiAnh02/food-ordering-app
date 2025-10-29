@@ -40,8 +40,14 @@ export const deleteStaff = async (req, res) =>{
 }
 
 
-
-
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await userModel.find();
+    res.status(200).json({ success: true, data: users });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
 // // 🔑 JWT helper
 // const createToken = (id) => {
 //     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });

@@ -1,13 +1,12 @@
 import express from "express";
-import { createStaff, deleteStaff } from "../../controllers/admin/userController.js";
+import { createStaff, deleteStaff, getAllUsers } from "../../controllers/admin/userController.js";
 import { authAdmin } from "../../middleware/admin/auth.js";
 
 
 const userRouter = express.Router();
 
-// Register Staff
-userRouter.post("/create-staff", authAdmin, createStaff);  // hanya Admin yang bisa register Staff
-userRouter.delete("/delete-staff/:id", authAdmin, deleteStaff); // hanya Admin yang bisa menghapus Staff
-
+userRouter.post("/create-staff", authAdmin, createStaff);  
+userRouter.delete("/delete-staff/:id", authAdmin, deleteStaff); 
+userRouter.get("/all-users", authAdmin, getAllUsers); 
 
 export default userRouter;
