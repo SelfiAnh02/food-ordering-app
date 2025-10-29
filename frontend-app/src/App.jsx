@@ -1,95 +1,83 @@
 // src/App.jsx
-import React from "react";
-import { BrowserRouter, Routes, Route, Navigate, useLocation, Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AdminLayout from "./layouts/admin/AdminLayout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/admin/Dashboard";
 import Products from "./pages/admin/Products";
 import Categories from "./pages/admin/Categories";
-
-// gunakan fetchCurrentUser & getUser dari authService
-import { getUser, fetchCurrentUser } from "./services/authService";
-
-/**
- * ProtectedRoute - sekarang verifikasi ke server saat mount
- * role = optional, mis. "admin"
- */
-function ProtectedRoute({ children, role }) {
-  const [state, setState] = React.useState({
-    checking: true,
-    authorized: false,
-  });
-  const location = useLocation();
-
-  React.useEffect(() => {
-    let mounted = true;
-
-    const verify = async () => {
-      // cek local dulu (optimitic)
-      const local = getUser();
-      if (local && (!role || local.role === role)) {
-        if (mounted) setState({ checking: true, authorized: true });
-      } else {
-        if (mounted) setState({ checking: true, authorized: false });
-      }
-
-      // lalu selalu verifikasi dengan server untuk memastikan cookie JWT valid
-      const serverUser = await fetchCurrentUser(); // harus memanggil /api/admin/me
-      if (!mounted) return;
-
-      if (serverUser && (!role || serverUser.role === role)) {
-        setState({ checking: false, authorized: true });
-      } else {
-        setState({ checking: false, authorized: false });
-      }
-    };
-
-    verify();
-
-    return () => {
-      mounted = false;
-    };
-  }, [role]);
-
-  if (state.checking) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-sm text-gray-500">Memeriksa autentikasi...</div>
-      </div>
-    );
-  }
-
-  if (!state.authorized) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
-  return children;
-}
-
-function NotFound() {
-  const location = useLocation();
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-amber-50 px-4">
-      <div className="bg-white p-8 rounded-2xl shadow-md border border-amber-100 text-center max-w-md w-full">
-        <h2 className="text-2xl font-semibold text-[#7a4528] mb-2">404 — Page Not Found</h2>
-        <p className="text-sm text-gray-600 mb-4">
-          Halaman <code className="bg-gray-100 px-1 rounded">{location.pathname}</code> tidak ditemukan.
-        </p>
-        <div className="flex gap-3 justify-center">
-          <Link to="/login" className="px-4 py-2 rounded-md border border-[#FF8A00] text-[#FF8A00]">Go to Login</Link>
-          <Link to="/admin" className="px-4 py-2 rounded-md bg-[#7a4528] text-white">Go to Dashboard</Link>
-        </div>
-      </div>
-    </div>
-  );
-}
+import Users from "./pages/admin/Users";
+import NotFound from "./components/NotFound";
+import { getMe } from "./services/authService";
 
 export default function App() {
+  const [loading, setLoading] = useState(true);
+
+  // ✅ Fungsi getMe untuk cek user login
+  const fecthMe = async () => {
+    if (window.location.pathname === "/login") {
+      setLoading(false);
+      return;
+    }
+    try {
+      const res = await getMe();
+      console.log("raw getMe result:", res);
+
+      if (!res || typeof res !== "object") {
+        console.warn("getMe returned unexpected:", res);
+        window.location.href = "/login";
+        return;
+      }
+
+      // log status supaya kita tahu kalau masih 304
+      console.log("getMe status:", res.status);
+
+      // jika 304 (shouldn't happen after fixes), treat as not-auth or refetch
+      if (res.status === 304) {
+        console.warn("Received 304 for /me — forcing reload to avoid cache");
+        // opsi: force reload from server:
+        const fresh = await getMe({ headers: { "Cache-Control": "no-cache" }});
+        console.log("fresh:", fresh);
+        // lalu lanjut proses fresh.data
+      }
+
+      // sekarang aman membaca res.data
+      console.log("Data user:", res.data);
+
+      // contoh: check payload
+      const payload = res.data;
+      if (!payload?.success) {
+        window.location.href = "/login";
+        return;
+      }
+      // set user state if needed
+    } catch (error) {
+      console.error("Gagal mendapatkan data user:", error);
+      // jika 401 redirect ke login
+      if (error?.response?.status === 401) {
+        window.location.href = "/login";
+      } else {
+        window.location.href = "/login";
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  useEffect(() => {
+    fecthMe();
+  }, []);
+
+  if(loading){
+    return <div>Loading...</div>;
+  }
+
   return (
     <BrowserRouter>
       <Routes>
-        {/* Root -> redirect to login */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        {/* Root -> redirect to dashboard */}
+        <Route path="/" element={<Navigate to="/admin" replace />} />
 
         {/* Login */}
         <Route path="/login" element={<Login />} />
@@ -98,19 +86,18 @@ export default function App() {
         <Route
           path="/admin/*"
           element={
-            <ProtectedRoute role="admin">
               <AdminLayout />
-            </ProtectedRoute>
           }
         >
           <Route index element={<Dashboard />} />
           <Route path="products" element={<Products />} />
           <Route path="categories" element={<Categories />} />
-          <Route path="*" element={<NotFound />} />
+          <Route path="users" element={<Users />} />
         </Route>
 
         {/* Top-level Not Found */}
-        <Route path="*" element={<NotFound />} />
+          {/* routes lain */}
+          <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Home, Box, Tags, Users, ShoppingCart, BarChart2, Grid } from "lucide-react";
+import { Home, Box, Tags, Users, ShoppingCart, BarChart2 } from "lucide-react";
 import logo from "../../assets/logo.png"; // pastikan path benar
 
 export default function Sidebar() {
@@ -16,7 +16,6 @@ export default function Sidebar() {
     { to: "/admin/users", label: "Users", icon: <Users size={18} /> },
     { to: "/admin/orders", label: "All Orders", icon: <ShoppingCart size={18} /> },
     { to: "/admin/reports", label: "Reports", icon: <BarChart2 size={18} /> },
-    { to: "/admin/table-numbers", label: "Table Numbers", icon: <Grid size={18} /> },
   ];
 
   return (
