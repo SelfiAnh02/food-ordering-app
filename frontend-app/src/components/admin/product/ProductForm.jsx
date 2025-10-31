@@ -8,19 +8,30 @@ export default function ProductForm({ initial = {}, categories = [], onCancel, o
     description: initial.description ?? "",
     priceNumber: initial.price ?? 0,
     priceText: initial.price ? formatNumberToLocale(initial.price) : "",
-    // category will be categoryId string (matching categories array items)
-    categoryId: initial.categoryId ?? initial.category ?? initial.categoryName ?? (categories[0]?.id ?? ""),
+    // ✅ pastikan ambil _id (bukan id) dari categories karena populate pakai _id
+    categoryId:
+      initial.categoryId?._id ??
+      initial.categoryId ??
+      initial.category ??
+      initial.categoryName ??
+      (categories[0]?._id ?? categories[0]?.id ?? ""),
     stock: initial.stock ?? 0,
     image: initial.image ?? "",
   });
 
+  // ✅ Reset ulang form jika props berubah (edit/add)
   useEffect(() => {
     setForm({
       name: initial.name ?? "",
       description: initial.description ?? "",
       priceNumber: initial.price ?? 0,
       priceText: initial.price ? formatNumberToLocale(initial.price) : "",
-      categoryId: initial.categoryId ?? initial.category ?? initial.categoryName ?? (categories[0]?.id ?? ""),
+      categoryId:
+        initial.categoryId?._id ??
+        initial.categoryId ??
+        initial.category ??
+        initial.categoryName ??
+        (categories[0]?._id ?? categories[0]?.id ?? ""),
       stock: initial.stock ?? 0,
       image: initial.image ?? "",
     });
@@ -54,12 +65,11 @@ export default function ProductForm({ initial = {}, categories = [], onCancel, o
       return;
     }
 
-    // IMPORTANT: send categoryId (backend expects categoryId: ObjectId)
     const payload = {
       name: form.name.trim(),
       description: form.description,
       price: Number(form.priceNumber) || 0,
-      categoryId: form.categoryId || "",
+      categoryId: form.categoryId || "", // ✅ kirim categoryId sesuai backend
       stock: Number(form.stock) || 0,
       image: form.image || "",
     };
@@ -81,15 +91,16 @@ export default function ProductForm({ initial = {}, categories = [], onCancel, o
         </div>
 
         <div>
-          <label className="text-sm block mb-1">Category</label>
+          <label className="block text-sm font-medium mb-1">Category</label>
           <select
-            value={form.categoryId}
-            onChange={(e) => change("categoryId", e.target.value)}
-            className="w-full border rounded px-2 py-1"
+            value={form.categoryId ?? ""}
+            onChange={(e) => setForm((s) => ({ ...s, categoryId: e.target.value }))}
+            className="w-full border rounded px-3 py-2"
+            required
           >
-            <option value="">-- Select category --</option>
+            <option value="">Select category</option>
             {categories.map((c) => (
-              <option key={c.id} value={c.id}>
+              <option key={c._id ?? c.id} value={c._id ?? c.id}>
                 {c.name}
               </option>
             ))}
@@ -126,7 +137,11 @@ export default function ProductForm({ initial = {}, categories = [], onCancel, o
           <input type="file" accept="image/*" onChange={handleImageFile} />
           {form.image ? (
             <div className="w-20 h-20 border rounded overflow-hidden">
-              <img src={form.image} alt="preview" className="w-full h-full object-cover" />
+              <img
+                src={form.image}
+                alt="preview"
+                className="w-full h-full object-cover"
+              />
             </div>
           ) : (
             <div className="w-20 h-20 border rounded flex items-center justify-center text-sm text-gray-400">
@@ -147,10 +162,17 @@ export default function ProductForm({ initial = {}, categories = [], onCancel, o
       </div>
 
       <div className="flex items-center gap-2 justify-end">
-        <button type="button" onClick={onCancel} className="px-3 py-2 border rounded">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-3 py-2 border rounded"
+        >
           Cancel
         </button>
-        <button type="submit" className="px-3 py-2 rounded bg-[var(--brown-700)] text-white">
+        <button
+          type="submit"
+          className="px-3 py-2 rounded bg-[var(--brown-700)] text-white"
+        >
           Save
         </button>
       </div>

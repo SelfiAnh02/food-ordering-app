@@ -10,7 +10,7 @@ export const createCategory = async (req, res)=> {
         }
 
         const category = await Category.create({ name, description });
-        res.status(201).json({ success: true, message: "Category created", data: category });
+        res.status(200).json({ success: true, message: "Category created", data: category });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
