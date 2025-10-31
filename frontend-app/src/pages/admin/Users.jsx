@@ -45,45 +45,53 @@ export default function Users() {
 
   return (
     <div className="space-y-6">
-      {/* header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        {/* <h1 className="text-2xl font-semibold text-[#7a4528]">Users</h1> */}
+    {/* Header */}
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+      <div className="flex flex-1 items-center gap-3 flex-wrap">
+        {/* Search bar */}
+        <div className="flex-1 min-w-[180px]">
+          <div className="flex items-center bg-white border rounded-md px-2 py-1">
+            <input
+              aria-label="Search users"
+              placeholder="Search by name or email..."
+              className="outline-none text-sm w-full px-2 py-1"
+              onChange={(e) => {
+                setFilter(e.target.value);
+                setPage(1); // reset page on new filter
+              }}
+            />
+          </div>
+        </div>
 
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto ">
-          <input
-            aria-label="Search users"
-            placeholder="Search by name or email..."
-            className="border rounded px-3 py-1 w-full sm:w-64 text-sm"
-            onChange={(e) => {
-              setFilter(e.target.value);
-              setPage(1); // reset page on new filter
-            }}
-          />
+        {/* Items per page */}
+        <select
+          value={itemsPerPage}
+          onChange={(e) => {
+            setItemsPerPage(Number(e.target.value));
+            setPage(1);
+          }}
+          className="border rounded-md px-2 py-2 text-sm bg-white"
+          aria-label="Items per page"
+        >
+          {[5, 10, 20, 50].map((n) => (
+            <option key={n} value={n}>
+              {n} / page
+            </option>
+          ))}
+        </select>
 
-          <select
-            value={itemsPerPage}
-            onChange={(e) => {
-              setItemsPerPage(Number(e.target.value));
-              setPage(1);
-            }}
-            className="border rounded px-2 py-1 text-sm"
-            aria-label="Items per page"
-          >
-            {[5, 10, 20, 50].map((n) => (
-              <option key={n} value={n}>
-                {n} / page
-              </option>
-            ))}
-          </select>
-
+        {/* Add Staff button */}
+        <div className="ml-auto sm:ml-0">
           <button
             onClick={() => setShowCreate(true)}
-            className="bg-[var(--brown-700)] text-white px-3 py-1 rounded text-sm "
+            className="px-3 py-2 rounded-md bg-[var(--brown-700)] text-white text-sm shadow-sm"
           >
             Add Staff
           </button>
         </div>
       </div>
+    </div>
+
 
       {error && <div className="text-red-600">{error}</div>}
 

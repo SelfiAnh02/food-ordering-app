@@ -315,7 +315,7 @@ export default function Categories() {
                 <button type="button" onClick={resetForm} className="px-3 py-2 border rounded text-sm" disabled={saving}>
                   Reset
                 </button>
-                <button type="submit" className="px-3 py-2 rounded bg-[var(--brown-700)] hover:bg-[var(--brown-800)] text-white text-sm" disabled={saving}>
+                <button type="submit" className="px-3 py-2 rounded bg-[var(--brown-700)]  text-white text-sm" disabled={saving}>
                   {saving ? (mode === "add" ? "Adding..." : "Updating...") : (
                     mode === "add" ? <span className="flex items-center gap-2"><Plus size={14} /> Add Category</span> : <span className="flex items-center gap-2"><Pencil size={14} /> Update Category</span>
                   )}
