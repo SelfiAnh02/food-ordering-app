@@ -1,8 +1,8 @@
 // src/pages/admin/Users.jsx
 import { useMemo, useState } from "react";
 import useUsers from "../../hooks/useUsers";
-import UsersTable from "../../components/admin/UsersTable";
-import CreateStaffModal from "../../components/admin/CreateStaffModal";
+import UsersTable from "../../components/admin/user/UsersTable";
+import CreateStaffModal from "../../components/admin/user/CreateStaffModal";
 
 export default function Users() {
   const { users, loading, error, create, remove } = useUsers();
@@ -47,13 +47,13 @@ export default function Users() {
     <div className="space-y-6">
       {/* header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold text-[#7a4528]">Users</h1>
+        {/* <h1 className="text-2xl font-semibold text-[#7a4528]">Users</h1> */}
 
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto ">
           <input
             aria-label="Search users"
             placeholder="Search by name or email..."
-            className="border rounded px-3 py-1 w-full sm:w-64"
+            className="border rounded px-3 py-1 w-full sm:w-64 text-sm"
             onChange={(e) => {
               setFilter(e.target.value);
               setPage(1); // reset page on new filter
@@ -66,7 +66,7 @@ export default function Users() {
               setItemsPerPage(Number(e.target.value));
               setPage(1);
             }}
-            className="border rounded px-2 py-1"
+            className="border rounded px-2 py-1 text-sm"
             aria-label="Items per page"
           >
             {[5, 10, 20, 50].map((n) => (
@@ -78,7 +78,7 @@ export default function Users() {
 
           <button
             onClick={() => setShowCreate(true)}
-            className="bg-[var(--brown-700)] text-white px-3 py-1 rounded"
+            className="bg-[var(--brown-700)] text-white px-3 py-1 rounded text-sm "
           >
             Add Staff
           </button>

@@ -1,5 +1,5 @@
 // frontend-app/src/services/userService.js
-import api from '../api/axios'; // sesuaikan kalau nama/locasinya berbeda
+import api from '../api/axios'; 
 
 
 export const fetchAllUsers = async () => {
