@@ -7,6 +7,7 @@ import { authStaff } from "../../middleware/staff/auth.js";
 const productRouter = express.Router();
 
 // routes product(admin only)
+// servis.js /api/admin/products/
 productRouter.post("/create", authAdmin, createProduct);
 productRouter.get("/", authStaff, getProducts);
 productRouter.get("/:id", authStaff, getProductById);

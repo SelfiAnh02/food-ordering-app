@@ -1,65 +1,92 @@
 // src/pages/admin/Categories.jsx
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pencil, Trash2, Plus, X } from "lucide-react";
 
+import {
+  getCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+} from "../../services/categoryService";
+
+
 /**
- * UI-only Categories page
- * - Left and Right panels are siblings (NOT wrapped in a single panel div)
- * - Left: table list (name, description, action icons) with right border
- * - Right: Add / Edit form (same form) as its own panel
+ * Categories page:
+ * - Left: table list (fetch from API)
+ * - Right: Add/Edit form (submits to API)
+ * - Pagination, search, responsive
+ * - Normalize backend _id -> id
  */
 
-const MOCK_CATEGORIES = [
-  { id: 1, name: "Coffee", description: "Minuman kopi, espresso, latte" },
-  { id: 2, name: "Tea", description: "Minuman teh: matcha, black, green" },
-  { id: 3, name: "Bakery", description: "Roti & pastry" },
-  { id: 4, name: "Beverages", description: "Minuman dingin & panas" },
-  { id: 5, name: "Snacks", description: "Makanan ringan" },
-  { id: 6, name: "Desserts", description: "Kue & makanan penutup" },
-  { id: 7, name: "Meals", description: "Makanan berat dan lauk" },
-];
-
-function nextId(list) {
-  return list.length === 0 ? 1 : Math.max(...list.map((x) => x.id)) + 1;
+function normalizeCategory(raw) {
+  if (!raw) return null;
+  const id = raw._id ?? raw.id ?? String(Math.random()).slice(2);
+  const name = raw.name ?? raw.title ?? "Unnamed";
+  const description = raw.description ?? raw.desc ?? "";
+  return { ...raw, id, name, description };
 }
 
 export default function Categories() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
 
   const [query, setQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 6;
 
-  const [mode, setMode] = useState("add");
+  // form state
+  const [mode, setMode] = useState("add"); // 'add' | 'edit'
   const [form, setForm] = useState({ id: null, name: "", description: "" });
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+
+  // fetch categories from API
+  async function fetchCategories() {
+    setLoading(true);
+    setFetchError(null);
+    try {
+      const res = await getCategories();
+      // backend returns { success: true, data: categories }
+      const raw = res?.data?.data ?? res?.data ?? res;
+      const list = Array.isArray(raw) ? raw.map(normalizeCategory) : [];
+      setCategories(list);
+    } catch (err) {
+      console.error("getCategories error", err);
+      setFetchError(err?.message ?? "Failed to load categories");
+      setCategories([]);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    // simulate load
-    const t = setTimeout(() => {
-      setCategories(MOCK_CATEGORIES);
-      setLoading(false);
-    }, 200);
-    return () => clearTimeout(t);
+    fetchCategories();
   }, []);
 
+  // filter & pagination
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return categories;
     return categories.filter(
       (c) =>
-        String(c.id).includes(q) ||
-        c.name?.toLowerCase().includes(q) ||
-        c.description?.toLowerCase().includes(q)
+        String(c.id).toLowerCase().includes(q) ||
+        c.name.toLowerCase().includes(q) ||
+        (c.description && c.description.toLowerCase().includes(q))
     );
   }, [categories, query]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+  }, [totalPages, currentPage]);
+
   const displayed = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return filtered.slice(start, start + itemsPerPage);
   }, [filtered, currentPage]);
 
+  // form helpers
   function resetForm() {
     setMode("add");
     setForm({ id: null, name: "", description: "" });
@@ -68,53 +95,87 @@ export default function Categories() {
   function fillFormForEdit(cat) {
     setMode("edit");
     setForm({ id: cat.id, name: cat.name ?? "", description: cat.description ?? "" });
+    // scroll into view (optional)
     document.getElementById("category-form")?.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
-  function handleSubmit(e) {
+  // create or update
+  async function handleSubmit(e) {
     e.preventDefault();
-    const name = form.name.trim();
+    const name = (form.name || "").trim();
     if (!name) return alert("Nama kategori wajib diisi.");
 
-    if (mode === "add") {
-      const id = nextId(categories);
-      const newCat = { id, name, description: form.description || "" };
-      setCategories((s) => [newCat, ...s]);
-      resetForm();
-      setCurrentPage(1);
-    } else {
-      setCategories((s) => s.map((c) => (c.id === form.id ? { ...c, name, description: form.description || "" } : c)));
-      resetForm();
+    setSaving(true);
+    try {
+      if (mode === "add") {
+        const res = await createCategory({ name, description: form.description || "" });
+        // backend: { success: true, data: category }
+        const createdRaw = res?.data?.data ?? res?.data ?? res;
+        const created = normalizeCategory(createdRaw);
+        if (created && created.id) {
+          setCategories((s) => [created, ...s]);
+        } else {
+          // fallback to refetch
+          await fetchCategories();
+        }
+        setCurrentPage(1);
+      } else {
+        // edit
+        const idToSend = form.id; // this should be _id or id; productService uses id
+        const res = await updateCategory(idToSend, { name, description: form.description || "" });
+        const updatedRaw = res?.data?.data ?? res?.data ?? res;
+        const updated = normalizeCategory(updatedRaw);
+        if (updated && updated.id) {
+          setCategories((s) => s.map((c) => (String(c.id) === String(updated.id) ? updated : c)));
+        } else {
+          await fetchCategories();
+        }
+        resetForm();
+      }
+    } catch (err) {
+      console.error("save category error", err);
+      alert(err?.response?.data?.message ?? "Gagal menyimpan kategori.");
+    } finally {
+      setSaving(false);
     }
   }
 
-  function handleDelete(cat) {
+  // delete
+  async function handleDelete(cat) {
     if (!confirm(`Hapus kategori "${cat.name}"?`)) return;
-    setCategories((s) => {
-      const next = s.filter((x) => x.id !== cat.id);
-      const newPages = Math.max(1, Math.ceil(next.length / itemsPerPage));
-      if (currentPage > newPages) setCurrentPage(newPages);
-      return next;
-    });
-    if (mode === "edit" && form.id === cat.id) resetForm();
+    setDeletingId(cat.id);
+    try {
+      const idToSend = cat._id ?? cat.id;
+      await deleteCategory(idToSend);
+      setCategories((s) => {
+        const next = s.filter((x) => String(x.id) !== String(cat.id));
+        // adjust page if needed
+        const newPages = Math.max(1, Math.ceil(next.length / itemsPerPage));
+        if (currentPage > newPages) setCurrentPage(newPages);
+        return next;
+      });
+      if (mode === "edit" && form.id === cat.id) resetForm();
+    } catch (err) {
+      console.error("delete category error", err);
+      alert(err?.response?.data?.message ?? "Gagal menghapus kategori.");
+    } finally {
+      setDeletingId(null);
+    }
   }
 
-  useEffect(() => {
-    if (currentPage > totalPages) setCurrentPage(totalPages);
-  }, [totalPages, currentPage]);
+  // small helper to render ID shorter on UI
+  function shortId(id) {
+    const s = String(id);
+    return s.length > 12 ? `${s.slice(0, 8)}…` : s;
+  }
 
   return (
-    <div className="p-6 h-full">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold">Categories</h2>
-        <p className="text-sm text-gray-500">Manage your product categories</p>
-      </div>
-
-      <div className="flex gap-6">
-        {/* LEFT panel (separate sibling) */}
-        <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 pr-6">
+    <div className="flex flex-col h-full">
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* LEFT: table list */}
+        <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 pr-0 lg:pr-6">
           <div className="p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
               <div className="flex items-center gap-2">
                 <input
                   value={query}
@@ -141,6 +202,8 @@ export default function Categories() {
 
             {loading ? (
               <div className="p-6 text-gray-500">Loading categories...</div>
+            ) : fetchError ? (
+              <div className="p-6 text-red-500">Error: {fetchError}</div>
             ) : filtered.length === 0 ? (
               <div className="p-6 text-sm text-gray-500 italic">No categories found.</div>
             ) : (
@@ -148,7 +211,7 @@ export default function Categories() {
                 <div className="rounded-lg overflow-hidden border border-gray-100">
                   <table className="w-full text-sm bg-white">
                     <thead>
-                      <tr className="text-left text-gray-600 border-b bg-gray-50">
+                      <tr className="text-sm text-left text-gray-600 bg-gray-100">
                         <th className="p-4">Name</th>
                         <th className="p-4">Description</th>
                         <th className="p-4 text-center w-32">Action</th>
@@ -160,7 +223,7 @@ export default function Categories() {
                         <tr key={c.id} className="border-b last:border-b-0 hover:bg-gray-50">
                           <td className="p-4 align-top">
                             <div className="font-medium text-gray-800">{c.name}</div>
-                            <div className="text-xs text-gray-500 mt-1">ID: {c.id}</div>
+                            <div className="text-xs text-gray-500 mt-1">ID: {shortId(c.id)}</div>
                           </td>
                           <td className="p-4 align-top text-gray-700">{c.description}</td>
                           <td className="p-4 align-top text-center">
@@ -176,8 +239,9 @@ export default function Categories() {
                                 onClick={() => handleDelete(c)}
                                 className="p-2 rounded-md border hover:shadow-sm bg-white text-red-600"
                                 title="Delete"
+                                disabled={deletingId === c.id}
                               >
-                                <Trash2 size={16} />
+                                {deletingId === c.id ? "..." : <Trash2 size={16} />}
                               </button>
                             </div>
                           </td>
@@ -187,26 +251,20 @@ export default function Categories() {
                   </table>
                 </div>
 
-                {/* Pagination controls (right-aligned) */}
+                {/* Pagination */}
                 <div className="flex justify-end items-center gap-3 mt-4">
                   <button
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
-                    className={`px-3 py-1 rounded border text-sm ${
-                      currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"
-                    }`}
+                    className={`px-3 py-1 rounded border text-sm ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"}`}
                   >
                     Prev
                   </button>
-                  <span className="text-sm text-gray-600">
-                    Page {currentPage} of {totalPages}
-                  </span>
+                  <span className="text-sm text-gray-600">Page {currentPage} of {totalPages}</span>
                   <button
                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages}
-                    className={`px-3 py-1 rounded border text-sm ${
-                      currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"
-                    }`}
+                    className={`px-3 py-1 rounded border text-sm ${currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"}`}
                   >
                     Next
                   </button>
@@ -216,18 +274,13 @@ export default function Categories() {
           </div>
         </div>
 
-        {/* RIGHT panel (separate sibling) */}
-        <div className="w-96 bg-white rounded-2xl shadow-sm border border-gray-100">
+        {/* RIGHT: add / edit form */}
+        <div className="w-full lg:w-96 bg-white rounded-2xl shadow-sm border border-gray-100">
           <div className="p-6" id="category-form">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-lg font-semibold">
-                {mode === "add" ? "Add Category" : `Edit Category (#${form.id})`}
-              </h3>
+              <h3 className="text-lg font-semibold">{mode === "add" ? "Add Category" : `Edit Category (#${shortId(form.id)})`}</h3>
               {mode === "edit" && (
-                <button
-                  onClick={resetForm}
-                  className="px-2 py-1 border rounded text-sm flex items-center gap-1"
-                >
+                <button onClick={resetForm} className="px-2 py-1 border rounded text-sm flex items-center gap-1">
                   <X size={14} /> Cancel
                 </button>
               )}
@@ -242,6 +295,7 @@ export default function Categories() {
                   className="w-full border rounded px-3 py-2"
                   placeholder="Category name"
                   required
+                  disabled={saving}
                 />
               </div>
 
@@ -253,21 +307,17 @@ export default function Categories() {
                   rows={4}
                   className="w-full border rounded px-3 py-2 text-sm"
                   placeholder="Short description..."
+                  disabled={saving}
                 />
               </div>
 
               <div className="flex justify-end gap-2">
-                <button type="button" onClick={resetForm} className="px-3 py-2 border rounded text-sm">
+                <button type="button" onClick={resetForm} className="px-3 py-2 border rounded text-sm" disabled={saving}>
                   Reset
                 </button>
-                <button
-                  type="submit"
-                  className="px-3 py-2 rounded bg-[var(--brown-700)] hover:bg-[var(--brown-800)] text-white text-sm"
-                >
-                  {mode === "add" ? (
-                    <span className="flex items-center gap-2"><Plus size={14} /> Add Category</span>
-                  ) : (
-                    <span className="flex items-center gap-2"><Pencil size={14} /> Update Category</span>
+                <button type="submit" className="px-3 py-2 rounded bg-[var(--brown-700)] hover:bg-[var(--brown-800)] text-white text-sm" disabled={saving}>
+                  {saving ? (mode === "add" ? "Adding..." : "Updating...") : (
+                    mode === "add" ? <span className="flex items-center gap-2"><Plus size={14} /> Add Category</span> : <span className="flex items-center gap-2"><Pencil size={14} /> Update Category</span>
                   )}
                 </button>
               </div>

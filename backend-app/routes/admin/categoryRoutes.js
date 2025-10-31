@@ -12,6 +12,7 @@ import { authStaff } from "../../middleware/staff/auth.js";
 const router = express.Router();
 
 // hanya admin yang boleh manage kategori
+// servis.js /api/admin/categories/
 router.post("/create", authAdmin, createCategory);
 router.get("/", authStaff, getCategories); // public, biar user bisa lihat kategori
 router.get("/:id", authStaff, getCategoryById);
