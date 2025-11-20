@@ -1,3 +1,4 @@
+//middleware/staff/auth.js
 import jwt from "jsonwebtoken";
 
 export const authStaff = (req, res, next) => {

@@ -24,10 +24,15 @@ const productSchema = new mongoose.Schema(
       type: Number,
       default: 0, // stok default 0
     },
+    salesCount: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true } // otomatis tambahkan createdAt & updatedAt
 );
 
-const Product = mongoose.models.product ||mongoose.model("Product", productSchema);
+const Product =
+  mongoose.models.product || mongoose.model("Product", productSchema);
 
 export default Product;

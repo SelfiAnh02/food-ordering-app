@@ -1,11 +1,17 @@
 import express from "express";
-import { placeOrder } from "../../controllers/admin/orderController.js";
+import {
+  getOrderStatsAdmin,
+  getAllOrdersAdmin,
+  getOrderByIdAdmin
+} from "../../controllers/admin/orderController.js";
 
+const router = express.Router();
 
-const orderRouter = express.Router();
-// routes order (user)
-orderRouter.post("/place", placeOrder);
+// STATIC routes first
+router.get("/stats", getOrderStatsAdmin);
+router.get("/", getAllOrdersAdmin);
 
+// DYNAMIC route last
+router.get("/:id", getOrderByIdAdmin);
 
-
-export default orderRouter;
+export default router;

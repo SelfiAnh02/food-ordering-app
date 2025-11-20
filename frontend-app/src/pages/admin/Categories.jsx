@@ -7,7 +7,7 @@ import {
   createCategory,
   updateCategory,
   deleteCategory,
-} from "../../services/categoryService";
+} from "../../services/admin/categoryService";
 
 
 /**
@@ -33,7 +33,7 @@ export default function Categories() {
 
   const [query, setQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const itemsPerPage = 5;
 
   // form state
   const [mode, setMode] = useState("add"); // 'add' | 'edit'
@@ -119,6 +119,7 @@ export default function Categories() {
           await fetchCategories();
         }
         setCurrentPage(1);
+        resetForm();
       } else {
         // edit
         const idToSend = form.id; // this should be _id or id; productService uses id
@@ -170,13 +171,13 @@ export default function Categories() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col min-h-screen">
       <div className="flex flex-col lg:flex-row gap-6">
         {/* LEFT: table list */}
         <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 pr-0 lg:pr-6">
           <div className="p-6">
             <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
                 <input
                   value={query}
                   onChange={(e) => {
@@ -184,7 +185,7 @@ export default function Categories() {
                     setCurrentPage(1);
                   }}
                   placeholder="Search categories..."
-                  className="border rounded px-3 py-2 text-sm w-64"
+                  className="border rounded px-3 py-2 text-sm w-full sm:w-64"
                 />
                 <button
                   onClick={() => {
@@ -197,7 +198,7 @@ export default function Categories() {
                 </button>
               </div>
 
-              <div className="text-sm text-gray-500">{categories.length} total</div>
+              <div className="text-sm text-gray-500 ml-auto">{categories.length} total</div>
             </div>
 
             {loading ? (
@@ -208,66 +209,104 @@ export default function Categories() {
               <div className="p-6 text-sm text-gray-500 italic">No categories found.</div>
             ) : (
               <>
-                <div className="rounded-lg overflow-hidden border border-gray-100">
-                  <table className="w-full text-sm bg-white">
-                    <thead>
-                      <tr className="text-sm text-left text-gray-600 bg-gray-100">
-                        <th className="p-4">Name</th>
-                        <th className="p-4">Description</th>
-                        <th className="p-4 text-center w-32">Action</th>
-                      </tr>
-                    </thead>
+                {/* TABLE for sm+ */}
+                <div className="rounded-lg overflow-x-auto bg-white border">
+                  <div className="hidden sm:block overflow-x-auto">
+                    <table className="min-w-full text-sm bg-white">
+                      <thead>
+                        <tr className="text-sm text-left text-gray-600 bg-gray-100 border-b">
+                          <th className="p-4">Name</th>
+                          <th className="p-4">Description</th>
+                          <th className="p-4 text-center w-32">Action</th>
+                        </tr>
+                      </thead>
 
-                    <tbody>
-                      {displayed.map((c) => (
-                        <tr key={c.id} className="border-b last:border-b-0 hover:bg-gray-50">
-                          <td className="p-4 align-top">
+                      <tbody>
+                        {displayed.map((c) => (
+                          <tr key={c.id} className="border-b last:border-b-0 hover:bg-gray-50">
+                            <td className="p-4 align-top">
+                              <div className="font-medium text-gray-800">{c.name}</div>
+                              <div className="text-xs text-gray-500 mt-1">ID: {shortId(c.id)}</div>
+                            </td>
+                            <td className="p-4 align-top text-gray-700">{c.description}</td>
+                            <td className="p-4 align-top text-center">
+                              <div className="inline-flex gap-2">
+                                <button
+                                  onClick={() => fillFormForEdit(c)}
+                                  className="p-2 rounded-md border hover:shadow-sm bg-white"
+                                  title="View / Edit"
+                                >
+                                  <Pencil size={16} />
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(c)}
+                                  className="p-2 rounded-md border hover:shadow-sm bg-white text-red-600"
+                                  title="Delete"
+                                  disabled={deletingId === c.id}
+                                >
+                                  {deletingId === c.id ? "..." : <Trash2 size={16} />}
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* CARD list for mobile (sm-) */}
+                  <div className="sm:hidden divide-y">
+                    {displayed.map((c) => (
+                      <div key={c.id} className="p-4 bg-white">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
                             <div className="font-medium text-gray-800">{c.name}</div>
                             <div className="text-xs text-gray-500 mt-1">ID: {shortId(c.id)}</div>
-                          </td>
-                          <td className="p-4 align-top text-gray-700">{c.description}</td>
-                          <td className="p-4 align-top text-center">
-                            <div className="inline-flex gap-2">
-                              <button
-                                onClick={() => fillFormForEdit(c)}
-                                className="p-2 rounded-md border hover:shadow-sm bg-white"
-                                title="View / Edit"
-                              >
-                                <Pencil size={16} />
-                              </button>
-                              <button
-                                onClick={() => handleDelete(c)}
-                                className="p-2 rounded-md border hover:shadow-sm bg-white text-red-600"
-                                title="Delete"
-                                disabled={deletingId === c.id}
-                              >
-                                {deletingId === c.id ? "..." : <Trash2 size={16} />}
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                            <div className="text-sm text-gray-700 mt-2">{c.description}</div>
+                          </div>
+
+                          <div className="flex-shrink-0 ml-2 flex items-start gap-2">
+                            <button
+                              onClick={() => fillFormForEdit(c)}
+                              className="p-2 rounded-md border hover:shadow-sm bg-white"
+                              title="View / Edit"
+                            >
+                              <Pencil size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(c)}
+                              className="p-2 rounded-md border hover:shadow-sm bg-white text-red-600"
+                              title="Delete"
+                              disabled={deletingId === c.id}
+                            >
+                              {deletingId === c.id ? "..." : <Trash2 size={16} />}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Pagination */}
-                <div className="flex justify-end items-center gap-3 mt-4">
-                  <button
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    className={`px-3 py-1 rounded border text-sm ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"}`}
-                  >
-                    Prev
-                  </button>
-                  <span className="text-sm text-gray-600">Page {currentPage} of {totalPages}</span>
-                  <button
-                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages}
-                    className={`px-3 py-1 rounded border text-sm ${currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"}`}
-                  >
-                    Next
-                  </button>
+                <div className="flex flex-col sm:flex-row sm:justify-end items-center gap-3 mt-4">
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className={`px-3 py-1 rounded border text-sm ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"}`}
+                    >
+                      Prev
+                    </button>
+                    <span className="text-sm text-gray-600">Page {currentPage} of {totalPages}</span>
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      className={`px-3 py-1 rounded border text-sm ${currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"}`}
+                    >
+                      Next
+                    </button>
+                  </div>
                 </div>
               </>
             )}
@@ -279,11 +318,6 @@ export default function Categories() {
           <div className="p-6" id="category-form">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-lg font-semibold">{mode === "add" ? "Add Category" : `Edit Category (#${shortId(form.id)})`}</h3>
-              {mode === "edit" && (
-                <button onClick={resetForm} className="px-2 py-1 border rounded text-sm flex items-center gap-1">
-                  <X size={14} /> Cancel
-                </button>
-              )}
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-3">
@@ -315,7 +349,7 @@ export default function Categories() {
                 <button type="button" onClick={resetForm} className="px-3 py-2 border rounded text-sm" disabled={saving}>
                   Reset
                 </button>
-                <button type="submit" className="px-3 py-2 rounded bg-[var(--brown-700)]  text-white text-sm" disabled={saving}>
+                <button type="submit" className="px-3 py-2 bg-amber-600 text-white rounded-md text-sm hover:bg-amber-700 transition shadow-sm"disabled={saving}>
                   {saving ? (mode === "add" ? "Adding..." : "Updating...") : (
                     mode === "add" ? <span className="flex items-center gap-2"><Plus size={14} /> Add Category</span> : <span className="flex items-center gap-2"><Pencil size={14} /> Update Category</span>
                   )}

@@ -83,56 +83,66 @@ export const getProductById = async (req, res) => {
       .lean();
 
     if (!product) {
-      return res.status(404).json({ success: false, message: "Product not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
 
-    res.status(200).json({ success: true, message: "Product fetched", product });
+    res
+      .status(200)
+      .json({ success: true, message: "Product fetched", product });
   } catch (error) {
     console.error("error fetching product by id:", error);
-    res.status(500).json({ success: false, message: "Failed to retrieve product" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to retrieve product" });
   }
 };
 
-// edit product 
+// edit product
 export const updateProduct = async (req, res) => {
-    try {
-        const product = await Product.findById(req.params.id);
+  try {
+    const product = await Product.findById(req.params.id);
 
-        if (!product) {
-            return res.status(404).json({ success: false, message: "Product not found" });
-        }
-
-        // update hanya field yang ada
-        if (req.body.name) product.name = req.body.name;
-        if (req.body.price) product.price = Number(req.body.price);
-        if (req.body.description) product.description = req.body.description;
-        if (req.body.categoryId) product.categoryId = req.body.categoryId;
-        product.stock = req.body.stock !== undefined ? Number(req.body.stock) : product.stock;
-
-        await product.save();
-
-        res.json({ success: true, message: "Product updated", product });
-    } catch (error) {
-        console.error(">>> ERROR editProduct:", error);
-        res.status(500).json({ success: false, message: error.message });
+    if (!product) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
+
+    // update hanya field yang ada
+    if (req.body.name) product.name = req.body.name;
+    if (req.body.price) product.price = Number(req.body.price);
+    if (req.body.description) product.description = req.body.description;
+    if (req.body.categoryId) product.categoryId = req.body.categoryId;
+    product.stock =
+      req.body.stock !== undefined ? Number(req.body.stock) : product.stock;
+
+    await product.save();
+
+    res.json({ success: true, message: "Product updated", product });
+  } catch (error) {
+    console.error(">>> ERROR editProduct:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
 };
 
 // delete product
 export const deleteProduct = async (req, res) => {
-    try {
-        const product = await Product.findById(req.params.id);
-        if (!product) {
-            return res.status(404).json({ success: false, message: "Product not found" });
-        }
-
-        await Product.findByIdAndDelete(req.params.id);
-        res.json({success:true,message:"Product deleted successfully"});
-    }catch (error) {
-        console.log( error);
-        res.status(500).json({ success: false, message: "Failed to delete product" });
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
+
+    await Product.findByIdAndDelete(req.params.id);
+    res.json({ success: true, message: "Product deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to delete product" });
+  }
 };
-
-
-

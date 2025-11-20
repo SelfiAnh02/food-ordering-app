@@ -1,4 +1,4 @@
-import api from "../api/axios";
+import api from "../../api/axios";
 
 export async function createCategory(payload) {
   const res = await api.post("/admin/categories/create", payload);

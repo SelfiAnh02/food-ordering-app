@@ -49,9 +49,6 @@ export const meAdmin = async (req, res) => {
   }
 };
 
-
-
-
 // LOGOUT ADMIN
 // controllers/authController.js
 export const logoutAdmin = (req, res) => {

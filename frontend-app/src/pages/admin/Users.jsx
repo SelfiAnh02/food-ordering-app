@@ -1,6 +1,6 @@
 // src/pages/admin/Users.jsx
 import { useMemo, useState } from "react";
-import useUsers from "../../hooks/useUsers";
+import useUsers from "../../hooks/admin/useUsers";
 import UsersTable from "../../components/admin/user/UsersTable";
 import CreateStaffModal from "../../components/admin/user/CreateStaffModal";
 
@@ -44,114 +44,127 @@ export default function Users() {
   };
 
   return (
-    <div className="space-y-6">
-    {/* Header */}
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-      <div className="flex flex-1 items-center gap-3 flex-wrap">
-        {/* Search bar */}
-        <div className="flex-1 min-w-[180px]">
-          <div className="flex items-center bg-white border rounded-md px-2 py-1">
-            <input
-              aria-label="Search users"
-              placeholder="Search by name or email..."
-              className="outline-none text-sm w-full px-2 py-1"
+    <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 min-h-screen flex flex-col">
+      {/* Wrapper utama */}
+      <div className="flex-1 flex flex-col p-4 sm:p-6">
+
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+          <div className="flex flex-1 items-center flex-wrap gap-3">
+            {/* Search bar */}
+            <div className="flex-1 min-w-[180px] sm:min-w-[250px]">
+              <div className="flex items-center bg-white border rounded-md px-2 py-1">
+                <input
+                  aria-label="Search users"
+                  placeholder="Search by name or email..."
+                  className="outline-none text-sm w-full px-2 py-1"
+                  onChange={(e) => {
+                    setFilter(e.target.value);
+                    setPage(1);
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Items per page */}
+            <select
+              value={itemsPerPage}
               onChange={(e) => {
-                setFilter(e.target.value);
-                setPage(1); // reset page on new filter
+                setItemsPerPage(Number(e.target.value));
+                setPage(1);
               }}
-            />
+              className="border rounded-md px-2 py-2 text-sm bg-white"
+              aria-label="Items per page"
+            >
+              {[5, 10, 20, 50].map((n) => (
+                <option key={n} value={n}>
+                  {n} / page
+                </option>
+              ))}
+            </select>
+
+            {/* Add Staff button */}
+            <button
+              onClick={() => setShowCreate(true)}
+              className="px-3 py-2 bg-amber-600 text-white rounded-md text-sm hover:bg-amber-700 transition shadow-sm"
+            >
+              Add Staff
+            </button>
           </div>
         </div>
 
-        {/* Items per page */}
-        <select
-          value={itemsPerPage}
-          onChange={(e) => {
-            setItemsPerPage(Number(e.target.value));
-            setPage(1);
-          }}
-          className="border rounded-md px-2 py-2 text-sm bg-white"
-          aria-label="Items per page"
-        >
-          {[5, 10, 20, 50].map((n) => (
-            <option key={n} value={n}>
-              {n} / page
-            </option>
-          ))}
-        </select>
+        {/* Error message */}
+        {error && <div className="text-red-600 mb-3">{error}</div>}
 
-        {/* Add Staff button */}
-        <div className="ml-auto sm:ml-0">
-          <button
-            onClick={() => setShowCreate(true)}
-            className="px-3 py-2 rounded-md bg-[var(--brown-700)] text-white text-sm shadow-sm"
-          >
-            Add Staff
-          </button>
-        </div>
-      </div>
-    </div>
-
-
-      {error && <div className="text-red-600">{error}</div>}
-
-      {/* table */}
-      <UsersTable users={pagedUsers} loading={loading} onDelete={handleDelete} />
-
-      {/* pagination controls */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-3">
-        <div className="text-sm text-gray-600">
-          Showing <span className="font-medium">{Math.min((page - 1) * itemsPerPage + 1, totalItems || 0)}</span>
-          {" - "}
-          <span className="font-medium">{Math.min(page * itemsPerPage, totalItems)}</span>
-          {" of "}
-          <span className="font-medium">{totalItems}</span>
+        {/* Table */}
+        <div className="min-w-full flex-1 overflow-x-auto">
+          <UsersTable users={pagedUsers} loading={loading} onDelete={handleDelete} />
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setPage(1)}
-            disabled={page === 1}
-            className="px-2 py-1 rounded border disabled:opacity-50"
-            aria-label="First page"
-          >
-            «
-          </button>
-
-          <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
-            className="px-3 py-1 rounded border disabled:opacity-50"
-            aria-label="Previous page"
-          >
-            Prev
-          </button>
-
-          <div className="px-3 py-1 border rounded text-sm">
-            Page <span className="font-medium">{page}</span> / <span>{totalPages}</span>
+        {/* Pagination controls */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6 border-t pt-4">
+          <div className="text-sm text-gray-600 text-center sm:text-left">
+            Showing{" "}
+            <span className="font-medium">
+              {Math.min((page - 1) * itemsPerPage + 1, totalItems || 0)}
+            </span>{" "}
+            -{" "}
+            <span className="font-medium">
+              {Math.min(page * itemsPerPage, totalItems)}
+            </span>{" "}
+            of <span className="font-medium">{totalItems}</span>
           </div>
 
-          <button
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={page === totalPages}
-            className="px-3 py-1 rounded border disabled:opacity-50"
-            aria-label="Next page"
-          >
-            Next
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage(1)}
+              disabled={page === 1}
+              className="px-2 py-1 rounded border disabled:opacity-50"
+              aria-label="First page"
+            >
+              «
+            </button>
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-3 py-1 rounded border disabled:opacity-50"
+              aria-label="Previous page"
+            >
+              Prev
+            </button>
 
-          <button
-            onClick={() => setPage(totalPages)}
-            disabled={page === totalPages}
-            className="px-2 py-1 rounded border disabled:opacity-50"
-            aria-label="Last page"
-          >
-            »
-          </button>
+            <div className="px-3 py-1 border rounded text-sm bg-gray-50">
+              Page <span className="font-medium">{page}</span> /{" "}
+              <span>{totalPages}</span>
+            </div>
+
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="px-3 py-1 rounded border disabled:opacity-50"
+              aria-label="Next page"
+            >
+              Next
+            </button>
+            <button
+              onClick={() => setPage(totalPages)}
+              disabled={page === totalPages}
+              className="px-2 py-1 rounded border disabled:opacity-50"
+              aria-label="Last page"
+            >
+              »
+            </button>
+          </div>
         </div>
       </div>
 
-      <CreateStaffModal open={showCreate} onClose={() => setShowCreate(false)} onCreate={handleCreate} />
+      {/* Modal */}
+      <CreateStaffModal
+        open={showCreate}
+        onClose={() => setShowCreate(false)}
+        onCreate={handleCreate}
+      />
     </div>
   );
+
 }

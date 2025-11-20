@@ -1,5 +1,5 @@
 // src/services/productService.js
-import api from "../api/axios";
+import api from "../../api/axios";
 
 /**
  * Service wrapper untuk products
@@ -7,7 +7,12 @@ import api from "../api/axios";
  * - createProduct/updateProduct/deleteProduct sesuai router backend
  */
 
-export async function getProducts({ page = 1, limit = 10, categoryId = "", q = "" } = {}) {
+export async function getProducts({
+  page = 1,
+  limit = 10,
+  categoryId = "",
+  q = "",
+} = {}) {
   const params = {};
   if (page) params.page = page;
   if (limit) params.limit = limit;
