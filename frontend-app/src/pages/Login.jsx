@@ -1,56 +1,118 @@
+// frontend-app/src/pages/Login.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
+import useStaffLogin from "../hooks/staff/useStaffLogin";
 
-const Login = () => {
+const Login = ({ mode = "admin" }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [localError, setLocalError] = useState(""); // errors local to this component
   const [loading, setLoading] = useState(false);
+
+  // staff hook
+  const staffHook = useStaffLogin();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setLocalError("");
     setLoading(true);
 
     try {
-      const res = await api.post("/admin/login", { email, password });
+      if (mode === "staff") {
+        const result = await staffHook.login(email, password);
 
-      if (res.data?.success) {
-        // simpan info user di localStorage
+        if (result?.success && result.user) {
+          // store minimal user info optionally
+          try {
+            localStorage.setItem(
+              "user",
+              JSON.stringify({
+                id: result.user.id,
+                name: result.user.name,
+                email: result.user.email,
+                role: result.user.role,
+              })
+            );
+          } catch (err) {
+            // ignore localStorage write errors
+            console.warn("localStorage set failed:", err);
+          }
 
-        // redirect sesuai role
-        if (res.data.user.role === "admin") {
-          navigate("/admin", { replace: true });
-        } else {
-          navigate("/", { replace: true }); // fallback atau staff route
+          navigate("/staff", { replace: true });
+          return;
         }
+
+        // use hook error if set, otherwise fallback
+        setLocalError(
+          staffHook.error || "Login staff gagal. Periksa email/password."
+        );
       } else {
-        setError(res.data?.message || "Login gagal. Periksa email/password kamu.");
+        // admin branch (kept as originally)
+        const res = await api.post(
+          "/admin/login",
+          { email, password },
+          { withCredentials: true }
+        );
+
+        if (res.data?.success) {
+          try {
+            localStorage.setItem(
+              "user",
+              JSON.stringify({
+                id: res.data.user.id,
+                name: res.data.user.name,
+                email: res.data.user.email,
+                role: res.data.user.role,
+              })
+            );
+          } catch (err) {
+            console.error("Gagal menyimpan data user ke localStorage:", err);
+          }
+
+          if (res.data.user.role === "admin") {
+            navigate("/admin", { replace: true });
+          } else {
+            navigate("/", { replace: true });
+          }
+        } else {
+          setLocalError(
+            res.data?.message || "Login gagal. Periksa email/password kamu."
+          );
+        }
       }
     } catch (err) {
+      // try to extract best message
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        (err?.message && err.message) ||
+        "Terjadi kesalahan saat login.";
+      setLocalError(msg);
       console.error("Login error:", err);
-      setError(err?.response?.data?.message || "Terjadi kesalahan saat login.");
     } finally {
       setLoading(false);
     }
   };
 
+  // prefer hook error if present
+  const errorMessage = localError || staffHook.error;
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-white to-amber-100 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-xs sm:max-w-sm md:max-w-md bg-white shadow-lg rounded-2xl p-6 sm:p-8 border border-amber-100">
-        <h1 className="text-2xl sm:text-3xl font-bold text-center text-amber-600 mb-6">
-          Admin Login
+        <h1 className="text-2xl sm:text-3xl font-bold text-center text-amber-700 mb-6">
+          {mode === "staff" ? "Staff Login" : "Admin Login"}
         </h1>
 
-        {error && (
+        {errorMessage && (
           <p className="text-red-500 text-sm text-center mb-4 bg-red-50 p-2 rounded">
-            {error}
+            {errorMessage}
           </p>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" autoComplete="on">
           <div>
             <label className="block text-gray-700 text-sm font-medium mb-1">
               Email
@@ -81,19 +143,20 @@ const Login = () => {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || staffHook.loading}
             className={`w-full py-2.5 rounded-lg text-white font-semibold transition-all ${
-              loading
+              loading || staffHook.loading
                 ? "bg-amber-300 cursor-not-allowed"
-                : "bg-amber-500 hover:bg-amber-600 shadow-md"
+                : "bg-amber-600 hover:bg-amber-700 shadow-md"
             }`}
           >
-            {loading ? "Memproses..." : "Masuk"}
+            {loading || staffHook.loading ? "Memproses..." : "Masuk"}
           </button>
         </form>
 
         <p className="text-xs sm:text-sm text-gray-500 text-center mt-6">
-          &copy; {new Date().getFullYear()} Food Ordering Admin Panel
+          &copy; {new Date().getFullYear()} Food Ordering{" "}
+          {mode === "staff" ? "Staff" : "Admin"} Panel
         </p>
       </div>
     </div>

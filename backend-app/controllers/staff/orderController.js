@@ -172,9 +172,9 @@ export const updateOrderStatus = async (req, res) => {
     }
 
     // ambil order dulu
-    const order = await orderModel.findById(id).select(
-      "_id items totalPrice tableNumber orderType orderStatus"
-    );
+    const order = await orderModel
+      .findById(id)
+      .populate("items.product", "name stock salesCount price");
 
     if (!order) {
       return res.status(404).json({
@@ -191,7 +191,16 @@ export const updateOrderStatus = async (req, res) => {
       });
     }
 
-    // baru update
+    // jika status diubah ke "delivered", tambahkan salesCount
+    if (status === "delivered") {
+      for (const item of order.items) {
+        await productModel.findByIdAndUpdate(item.product._id, {
+          $inc: { salesCount: item.quantity },
+        });
+      }
+    }
+
+    // update status order
     order.orderStatus = status;
     await order.save();
 
@@ -209,4 +218,5 @@ export const updateOrderStatus = async (req, res) => {
     });
   }
 };
+
 

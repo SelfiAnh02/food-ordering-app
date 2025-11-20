@@ -1,4 +1,3 @@
-// src/components/Navbar.jsx
 import { useLocation, useNavigate } from "react-router-dom";
 import { useMemo } from "react";
 import { Menu, Search, UserRound } from "lucide-react";
@@ -43,7 +42,6 @@ export default function Navbar({ onToggleSidebar, onLogout }) {
       try {
         onLogout();
       } catch (e) {
-        // if parent's handler throws, still do fallback cleanup
         console.error("onLogout error:", e);
         try {
           localStorage.removeItem("token");
@@ -57,7 +55,6 @@ export default function Navbar({ onToggleSidebar, onLogout }) {
       return;
     }
 
-    // fallback: clear local/session storage and navigate to login
     try {
       localStorage.removeItem("token");
       sessionStorage.removeItem("token");
@@ -69,15 +66,15 @@ export default function Navbar({ onToggleSidebar, onLogout }) {
   };
 
   return (
-    <header className="h-16 flex items-center justify-between px-4 md:px-6 lg:px-10 bg-white border-b border-amber-100 z-40">
-      {/* left: toggle + title */}
-      <div className="flex items-center gap-3">
+    // header styling only; position handled by layout
+    <header className="h-16 flex items-center justify-between px-4 md:px-6 lg:px-10 bg-white border-b border-amber-100 max-w-full">      {/* left: toggle + title */}
+      <div className="flex items-center gap-3 min-w-0">
         <button
           onClick={onToggleSidebar}
           aria-label="Toggle sidebar"
           className="p-2 rounded-md hover:bg-amber-50 md:hidden"
         >
-          <Menu className="w-5 h-5 text-[#7a4528]" />
+          <Menu className="w-5 h-5 text-amber-800" />
         </button>
 
         <div className="flex flex-col">
@@ -102,7 +99,7 @@ export default function Navbar({ onToggleSidebar, onLogout }) {
         {/* logout (hidden on xs) */}
         <button
           onClick={handleLogout}
-          className="hidden sm:inline-block text-sm px-3 py-1 rounded-md border border-[#FF8A00] hover:bg-[#FF8A0033] text-[#FF8A00] font-medium"
+          className="hidden sm:inline-block text-sm px-3 py-1 rounded-md border border-[#FF8A00] hover:bg-amber-50 text-[#FF8A00] font-medium"
           title="Logout"
         >
           Logout
@@ -113,7 +110,7 @@ export default function Navbar({ onToggleSidebar, onLogout }) {
           onClick={() => {
             /* optional dropdown */
           }}
-          className="p-2 rounded-full bg-[#7a4528] text-white hover:bg-[#FF8A00] transition-colors"
+          className="p-2 rounded-full bg-amber-600 text-white hover:bg-amber-700 transition-colors"
           title="Profile"
         >
           <UserRound size={18} />

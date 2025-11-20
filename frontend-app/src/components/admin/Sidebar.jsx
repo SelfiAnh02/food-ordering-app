@@ -19,8 +19,8 @@ export default function Sidebar() {
   ];
 
   return (
-    // fixed left so sidebar always covers the full viewport height
-    <aside className="fixed inset-y-0 left-0 w-60 bg-white border-r border-amber-100 z-30 flex flex-col">
+    // Desktop sidebar: fixed and full height; hidden on small screens (mobile overlay used)
+    <aside className="fixed top-0 left-0 h-screen w-60 bg-white border-r border-amber-100 z-40 flex flex-col">
       {/* Top: Logo + Brand */}
       <div className="px-6 py-5 border-b border-amber-100 flex items-center gap-4 bg-gradient-to-r from-[#fff7ef] to-white">
         <div className="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center">
@@ -45,7 +45,7 @@ export default function Sidebar() {
             className={({ isActive }) =>
               `${navItemBase} ${
                 isActive
-                  ? "bg-amber-50 text-[#7a4528] font-semibold ring-1 ring-amber-100"
+                  ? "bg-amber-50 text-amber-800 font-semibold ring-1 ring-amber-100"
                   : "text-gray-700 hover:bg-amber-50 hover:text-[#7a4528]"
               }`
             }
@@ -56,7 +56,7 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* Footer tetap di bawah: gunakan mt-auto untuk "mengendorse" footer ke dasar flex container */}
+      {/* Footer tetap di bawah */}
       <div className="mt-auto px-4 py-3 border-t border-amber-50 text-xs text-gray-500">
         <div>Version 1.0</div>
       </div>
