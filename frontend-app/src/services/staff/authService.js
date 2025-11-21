@@ -1,11 +1,24 @@
 import api from "../../api/axios";
 
 export const staffLogin = async (email, password) => {
-  const res = await api.post("/staff/login", { email, password });
+  const res = await api.post(
+    "/staff/login",
+    { email, password },
+    { withCredentials: true } // penting!
+  );
   return res.data;
 };
 
 export const staffLogout = async () => {
-  const res = await api.post("/staff/logout");
+  const res = await api.post(
+    "/staff/logout",
+    {},
+    { withCredentials: true } // penting!
+  );
+  return res.data;
+};
+
+export const fetchStaffMe = async () => {
+  const res = await api.get("/staff/me", { withCredentials: true });
   return res.data;
 };

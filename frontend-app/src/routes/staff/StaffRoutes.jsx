@@ -1,27 +1,25 @@
 // src/routes/staff/StaffRoutes.jsx
 import { Routes, Route } from "react-router-dom";
 import Login from "../../pages/Login";
-import RequireStaff from "../../utils/RequireStaff"; // lihat bagian 3
+import RequireStaff from "../../utils/RequireStaff";
 import StaffMainLayout from "../../layouts/staff/StaffMainLayout";
-
-// import halaman staffmu bila perlu
+import Dashboard from "../../pages/staff/Dashboard";
 
 export default function StaffRoutes() {
   return (
     <Routes>
-      <Route path="/staff/login" element={<Login mode="staff" />} />
+      {/* /staff/login */}
+      <Route path="login" element={<Login mode="staff" />} />
 
+      {/* PROTECTED ROUTES */}
       <Route
-        path="/staff/*"
         element={
           <RequireStaff>
             <StaffMainLayout />
           </RequireStaff>
         }
       >
-        {/* nested staff routes di sini: contoh
-        <Route path="dashboard" element={<StaffDashboardPage />} />
-        */}
+        <Route path="dashboard" element={<Dashboard />} />
       </Route>
     </Routes>
   );
