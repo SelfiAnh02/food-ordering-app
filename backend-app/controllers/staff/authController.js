@@ -9,13 +9,17 @@ export const loginStaff = async (req, res) => {
 
     const user = await userModel.findOne({ email, role: "staff" });
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     // cek password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ success: false, message: "Invalid credentials" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid credentials" });
     }
 
     // generate token dan set di cookie
@@ -36,6 +40,24 @@ export const loginStaff = async (req, res) => {
   }
 };
 
+// GET STAFF ME
+export const getStaffMe = async (req, res) => {
+  try {
+    const user = await userModel.findById(req.user.id).select("-password");
+    if (!user || user.role !== "staff") {
+      return res
+        .status(404)
+        .json({ success: false, message: "Staff not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
 export const logoutStaff = (req, res) => {
   res.cookie("jwt", "", {
@@ -46,4 +68,3 @@ export const logoutStaff = (req, res) => {
   });
   res.status(200).json({ success: true, message: "Logout berhasil" });
 };
-

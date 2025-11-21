@@ -24,30 +24,13 @@ const Login = ({ mode = "admin" }) => {
         const result = await staffHook.login(email, password);
 
         if (result?.success && result.user) {
-          // store minimal user info optionally
-          try {
-            localStorage.setItem(
-              "user",
-              JSON.stringify({
-                id: result.user.id,
-                name: result.user.name,
-                email: result.user.email,
-                role: result.user.role,
-              })
-            );
-          } catch (err) {
-            // ignore localStorage write errors
-            console.warn("localStorage set failed:", err);
-          }
+          localStorage.setItem("user", JSON.stringify(result.user));
 
-          navigate("/staff", { replace: true });
+          navigate("/staff/dashboard", { replace: true });
           return;
         }
 
-        // use hook error if set, otherwise fallback
-        setLocalError(
-          staffHook.error || "Login staff gagal. Periksa email/password."
-        );
+        setLocalError(staffHook.error || "Login staff gagal.");
       } else {
         // admin branch (kept as originally)
         const res = await api.post(
