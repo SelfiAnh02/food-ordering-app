@@ -1,23 +1,60 @@
-import React, { useState } from "react";
+import { useState, useMemo } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import Sidebar from "../../components/admin/Sidebar";
-import Navbar from "../../components/admin/Navbar";
+import Sidebar from "../../components/common/Sidebar";
+import Navbar from "../../components/common/Navbar";
+import { Home, Box, Tags, Users, ShoppingCart, BarChart2 } from "lucide-react";
+import { logout } from "../../services/admin/authService";
+
+const menu = [
+  { to: "/admin", label: "Dashboard", icon: <Home size={18} /> },
+  { to: "/admin/products", label: "Products", icon: <Box size={18} /> },
+  { to: "/admin/categories", label: "Categories", icon: <Tags size={18} /> },
+  { to: "/admin/users", label: "Users", icon: <Users size={18} /> },
+  {
+    to: "/admin/orders",
+    label: "All Orders",
+    icon: <ShoppingCart size={18} />,
+  },
+  { to: "/admin/reports", label: "Reports", icon: <BarChart2 size={18} /> },
+];
 
 /**
  * AdminLayout
  */
-export default function AdminLayout({ children, onLogout }) {
+export default function AdminLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
+  const pageTitle = useMemo(() => {
+    const map = {
+      "/admin": "Dashboard",
+      "/admin/products": "Products",
+      "/admin/categories": "Categories",
+      "/admin/users": "Users",
+      "/admin/orders": "All Orders",
+      "/admin/reports": "Reports",
+      "/admin/table-numbers": "Table Numbers",
+    };
+    const path = location.pathname.replace(/\/+$/, "");
+    const titleBase =
+      map[path] ??
+      (() => {
+        const seg = path.split("/").filter(Boolean).pop() || "Dashboard";
+        return seg
+          .split("-")
+          .map((s) => (s[0] ? s[0].toUpperCase() + s.slice(1) : s))
+          .join(" ");
+      })();
+    return `${titleBase} - Admin`;
+  }, []);
 
   const toggleSidebar = () => setSidebarOpen((s) => !s);
   const closeSidebar = () => setSidebarOpen(false);
 
   // centralized logout handler used by Navbar (and Sidebar if needed)
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (typeof onLogout === "function") {
       try {
-        onLogout();
+        await logout();
       } catch (error) {
         console.error("Logout error:", error);
       }
@@ -29,7 +66,7 @@ export default function AdminLayout({ children, onLogout }) {
     <div className="h-screen w-screen flex bg-gray-100 overflow-hidden">
       {/* Desktop sidebar (fixed) */}
       <div className="hidden md:block">
-        <Sidebar />
+        <Sidebar menu={menu} />
       </div>
 
       {/* Mobile sidebar (overlay). Note: Sidebar receives no props. */}
@@ -40,7 +77,7 @@ export default function AdminLayout({ children, onLogout }) {
             onClick={closeSidebar}
           />
           <div className="absolute left-0 top-0 bottom-0 w-60 bg-white border-r z-50">
-            <Sidebar />
+            <Sidebar menu={menu} />
           </div>
         </div>
       )}
@@ -53,7 +90,11 @@ export default function AdminLayout({ children, onLogout }) {
             sidebarOpen ? "left-60" : "left-0"
           } md:left-60 ${sidebarOpen ? "hidden" : "block"} md:block`}
         >
-          <Navbar onToggleSidebar={toggleSidebar} onLogout={handleLogout} />
+          <Navbar
+            onToggleSidebar={toggleSidebar}
+            onLogout={handleLogout}
+            pageTitle={pageTitle}
+          />
         </div>
         {/* beri ruang atas setinggi header (h-16) agar konten tidak tertutup; padding-top diminta = 20 */}
         <main className="flex-1 w-full overflow-y-auto px-6 py-8 pt-20 overflow-x-hidden">

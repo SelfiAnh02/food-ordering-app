@@ -18,7 +18,6 @@ export const staffLogout = async () => {
   return res.data;
 };
 
-export const fetchStaffMe = async () => {
-  const res = await api.get("/staff/me", { withCredentials: true });
-  return res.data;
+export const getMe = async () => {
+  await api.get("/staff/me");
 };

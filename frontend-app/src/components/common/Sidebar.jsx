@@ -1,22 +1,13 @@
 import { NavLink } from "react-router-dom";
-import { Home, Box, Tags, Users, ShoppingCart, BarChart2 } from "lucide-react";
+
 import logo from "../../assets/logo.png"; // pastikan path benar
 
-export default function Sidebar() {
+export default function Sidebar({ menu }) {
   const brandText = "text-[#7a4528]"; // coklat
   const accent = "#FF8A00";
 
   const navItemBase =
     "flex items-center gap-3 px-4 py-2 rounded-md transition-colors duration-150 text-sm";
-
-  const menu = [
-    { to: "/admin", label: "Dashboard", icon: <Home size={18} /> },
-    { to: "/admin/products", label: "Products", icon: <Box size={18} /> },
-    { to: "/admin/categories", label: "Categories", icon: <Tags size={18} /> },
-    { to: "/admin/users", label: "Users", icon: <Users size={18} /> },
-    { to: "/admin/orders", label: "All Orders", icon: <ShoppingCart size={18} /> },
-    { to: "/admin/reports", label: "Reports", icon: <BarChart2 size={18} /> },
-  ];
 
   return (
     // Desktop sidebar: fixed and full height; hidden on small screens (mobile overlay used)
@@ -24,13 +15,22 @@ export default function Sidebar() {
       {/* Top: Logo + Brand */}
       <div className="px-6 py-5 border-b border-amber-100 flex items-center gap-4 bg-gradient-to-r from-[#fff7ef] to-white">
         <div className="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center">
-          <img src={logo} alt="Logo Toko" className="w-full h-full object-cover" />
+          <img
+            src={logo}
+            alt="Logo Toko"
+            className="w-full h-full object-cover"
+          />
         </div>
 
         <div className="flex flex-col leading-tight">
-          <h1 className={`text-lg font-bold ${brandText} tracking-tight`}>Saja'ne</h1>
+          <h1 className={`text-lg font-bold ${brandText} tracking-tight`}>
+            Saja'ne
+          </h1>
           <span className="text-sm text-gray-600">Tea & Coffee Bar</span>
-          <span className="text-xs mt-0.5 font-medium" style={{ color: accent }}>
+          <span
+            className="text-xs mt-0.5 font-medium"
+            style={{ color: accent }}
+          >
             Admin Panel
           </span>
         </div>

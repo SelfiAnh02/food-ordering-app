@@ -26,7 +26,7 @@ const Login = ({ mode = "admin" }) => {
         if (result?.success && result.user) {
           localStorage.setItem("user", JSON.stringify(result.user));
 
-          navigate("/staff/dashboard", { replace: true });
+          navigate("/staff/", { replace: true });
           return;
         }
 
