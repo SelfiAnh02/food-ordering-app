@@ -12,6 +12,7 @@ import NotFound from "./components/common/NotFound";
 import { getMe } from "./services/admin/authService";
 import { getMe as getMeStaff } from "./services/staff/authService";
 import StaffMainLayout from "./layouts/staff/StaffMainLayout";
+import Cashier from "./pages/staff/Cashier";
 
 export default function App() {
   const [loading, setLoading] = useState(true);
@@ -90,11 +91,14 @@ export default function App() {
 
         {/* STAFF ROUTES */}
         <Route path="/staff/*" element={<StaffMainLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="products" element={<Products />} />
-          <Route path="categories" element={<Categories />} />
-          <Route path="users" element={<Users />} />
-          <Route path="orders" element={<Orders />} />
+          {/* Default staff redirect → langsung ke Orders (Cashier) */}
+          <Route index element={<Cashier />} />
+
+          {/* Staff pages */}
+          {/* <Route path="orders" element={<StaffOrders />} />
+          <Route path="incoming-orders" element={<IncomingOrders />} />
+          <Route path="all-orders" element={<AllOrders />} />
+          <Route path="order/:id" element={<OrderDetail />} /> */}
         </Route>
 
         {/* LAST CATCH */}

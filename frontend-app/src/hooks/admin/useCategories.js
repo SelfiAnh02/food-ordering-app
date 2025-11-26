@@ -1,4 +1,4 @@
-// src/hooks/useCategories.js
+// src/hooks/admin/useCategories.js
 import { useCallback, useEffect, useState } from "react";
 import { getCategories as apiGetCategories } from "../../services/admin/categoryService";
 
