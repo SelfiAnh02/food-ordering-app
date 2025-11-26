@@ -1,4 +1,4 @@
-// src/hooks/useProducts.js
+// src/hooks/admin/useProducts.js
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getProducts as apiGetProducts } from "../../services/admin/productService";
 import normalizeProduct from "../../utils/normalizeProduct";
@@ -8,7 +8,10 @@ import normalizeProduct from "../../utils/normalizeProduct";
  * - page, limit, categoryId, q (search)
  * - returns: products (normalized), loading, error, pagination metadata, actions
  */
-export default function useProducts({ initialPage = 1, initialLimit = 9 } = {}) {
+export default function useProducts({
+  initialPage = 1,
+  initialLimit = 9,
+} = {}) {
   const [page, setPage] = useState(initialPage);
   const [limit, setLimit] = useState(initialLimit);
   const [categoryId, setCategoryId] = useState("");
@@ -19,11 +22,21 @@ export default function useProducts({ initialPage = 1, initialLimit = 9 } = {}) 
   const [totalItems, setTotalItems] = useState(0);
 
   const fetch = useCallback(
-    async ({ page: p = page, limit: l = limit, categoryId: c = categoryId, q: qq = q } = {}) => {
+    async ({
+      page: p = page,
+      limit: l = limit,
+      categoryId: c = categoryId,
+      q: qq = q,
+    } = {}) => {
       setLoading(true);
       setError(null);
       try {
-        const data = await apiGetProducts({ page: p, limit: l, categoryId: c, q: qq });
+        const data = await apiGetProducts({
+          page: p,
+          limit: l,
+          categoryId: c,
+          q: qq,
+        });
         // data may be { success, message, products, totalItems } or other shapes
         const rawList = data?.products ?? data?.data ?? data ?? [];
         const list = Array.isArray(rawList) ? rawList : [];
@@ -46,7 +59,10 @@ export default function useProducts({ initialPage = 1, initialLimit = 9 } = {}) 
     fetch({ page, limit, categoryId, q });
   }, [fetch, page, limit, categoryId, q]);
 
-  const products = useMemo(() => productsRaw.map(normalizeProduct), [productsRaw]);
+  const products = useMemo(
+    () => productsRaw.map(normalizeProduct),
+    [productsRaw]
+  );
 
   const totalPages = Math.max(1, Math.ceil((totalItems || 0) / (limit || 1)));
 

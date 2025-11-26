@@ -4,17 +4,30 @@ import { useMemo, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import Sidebar from "../../components/common/Sidebar";
 import Navbar from "../../components/common/Navbar";
-import { BarChart2, Home, ShoppingCart } from "lucide-react";
+import { BarChart2, Bell, List, ShoppingCart } from "lucide-react";
 import { staffLogout } from "../../services/staff/authService";
 
 const menu = [
-  { to: "/staff", label: "Dashboard", icon: <Home size={18} /> },
   {
-    to: "/staff/orders",
-    label: "All Orders",
+    to: "/staff/",
+    label: "Orders / Cashier",
     icon: <ShoppingCart size={18} />,
   },
-  { to: "/staff/reports", label: "Reports", icon: <BarChart2 size={18} /> },
+  {
+    to: "/staff/incoming-orders",
+    label: "Incoming Orders",
+    icon: <Bell size={18} />,
+  },
+  {
+    to: "/staff/all-orders",
+    label: "All Orders",
+    icon: <List size={18} />,
+  },
+  {
+    to: "/staff/reports",
+    label: "Reports",
+    icon: <BarChart2 size={18} />,
+  },
 ];
 
 /**
@@ -29,13 +42,15 @@ export default function StaffMainLayout({ children }) {
 
   const pageTitle = useMemo(() => {
     const map = {
-      "/staff": "Dashboard",
+      "/staff/": "Orders (Cashier)",
+      "/staff/incoming-orders": "Incoming Orders",
+      "/staff/all-orders": "All Orders",
     };
     const path = location.pathname.replace(/\/+$/, "");
     const titleBase =
       map[path] ??
       (() => {
-        const seg = path.split("/").filter(Boolean).pop() || "Dashboard";
+        const seg = path.split("/").filter(Boolean).pop() || "Orders";
         return seg
           .split("-")
           .map((s) => (s[0] ? s[0].toUpperCase() + s.slice(1) : s))
