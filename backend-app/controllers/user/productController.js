@@ -1,6 +1,5 @@
 import Product from "../../models/productModel.js";
 
-
 // all product list
 export const getProducts = async (req, res) => {
   try {
@@ -28,18 +27,24 @@ export const getProducts = async (req, res) => {
     console.error("error:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to retrieve products"
+      message: "Failed to retrieve products",
     });
   }
 };
 
 // get product by category
 export const getProductById = async (req, res) => {
-    try {
-        const product = await Product.findById(req.params.id).select("id name description price ");
-        res.status(200).json({ success: true, message: "Product fetched", product });
-    } catch (error) {
-        console.error("error:", error);
-        res.status(500).json({ success: false, message: "Failed to retrieve product" });
-    }
+  try {
+    const product = await Product.findById(req.params.id).select(
+      "id name description price "
+    );
+    res
+      .status(200)
+      .json({ success: true, message: "Product fetched", product });
+  } catch (error) {
+    console.error("error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to retrieve product" });
+  }
 };

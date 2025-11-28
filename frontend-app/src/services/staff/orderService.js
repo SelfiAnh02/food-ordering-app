@@ -1,11 +1,18 @@
+// frontend-app/src/services/staff/orderService.js
 import api from "../../api/axios";
 
 export async function createOrder(payload) {
   return await api.post("/staff/orders/create", payload);
 }
 
-export async function getOrders() {
-  return await api.get("/staff/orders");
+export async function getOrders(params = "") {
+  const res = await api.get(`/staff/orders${params}`);
+  const payload = res?.data ?? res;
+  // support multiple shapes
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload.data)) return payload.data;
+  if (Array.isArray(payload.orders)) return payload.orders;
+  return [];
 }
 
 export async function getOrderById(id) {
@@ -17,6 +24,8 @@ export async function updateOrderStatus(id, payload) {
 }
 
 export async function getIncomingOrders() {
-  const res = await api.get(`/staff/orders`);
-  return res.data.filter((o) => o.status === "pending");
+  const all = await getOrders();
+  return all.filter(
+    (o) => (o.orderStatus ?? o.status ?? "").toString() === "pending"
+  );
 }

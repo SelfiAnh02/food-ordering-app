@@ -1,7 +1,8 @@
 // src/components/staff/cashier/ProductCard.jsx
-
 export default function ProductCard({ product, onSelect }) {
-  const isOut = product.stock <= 0;
+  const stockNum = Number(product?.stock ?? 0);
+  const isOut = stockNum <= 0;
+  const imgSrc = product?.image ?? product?.imageUrl ?? "";
 
   return (
     <div
@@ -11,8 +12,12 @@ export default function ProductCard({ product, onSelect }) {
       onClick={() => !isOut && onSelect(product)}
     >
       <div className="w-full h-32 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
-        {product.image ? (
-          <img src={product.image} className="w-full h-full object-cover" />
+        {imgSrc ? (
+          <img
+            src={imgSrc}
+            alt={product?.name ?? "product"}
+            className="w-full h-full object-cover"
+          />
         ) : (
           <div className="text-gray-400 text-sm">No Image</div>
         )}
@@ -20,12 +25,12 @@ export default function ProductCard({ product, onSelect }) {
 
       <div className="mt-3">
         <h3 className="text-sm font-semibold text-amber-800 line-clamp-1">
-          {product.name}
+          {product?.name ?? "Unnamed"}
         </h3>
-        <div className="text-xs text-gray-500">Stock: {product.stock}</div>
+        <div className="text-xs text-gray-500">Stock: {stockNum}</div>
 
         <div className="mt-1 font-semibold text-[#FF8A00]">
-          Rp {product.price?.toLocaleString()}
+          Rp {Number(product?.price ?? 0).toLocaleString()}
         </div>
       </div>
 

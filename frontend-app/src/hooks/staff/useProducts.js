@@ -1,75 +1,67 @@
 // src/hooks/staff/useProducts.js
 import { useEffect, useState } from "react";
 import { getProducts } from "../../services/staff/productService";
-import { getCategories } from "../../services/staff/categoryService";
+import useCategories from "./useCategories";
+
+/**
+ * Normalize product shape to: { _id, name, price:Number, stock:Number, image, categoryId }
+ */
+function normalizeProduct(p) {
+  if (!p) return null;
+  const _id = p._id ?? p.id ?? String(Math.random()).slice(2);
+  const name = p.name ?? p.title ?? "Unnamed";
+  const price = Number(p.price ?? 0) || 0;
+  // backend now sends stock; fallback to 0 if missing
+  const stock = Number(p.stock ?? 0) || 0;
+  const image =
+    p.image ?? p.imageUrl ?? (Array.isArray(p.images) ? p.images[0] : "") ?? "";
+  const categoryId =
+    p.categoryId ?? (p.category && (p.category._id ?? p.category.id)) ?? null;
+
+  return { ...p, _id, name, price, stock, image, categoryId };
+}
 
 export default function useProducts() {
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [activeCategory, setActiveCategory] = useState("all");
-  const [loading, setLoading] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(true);
 
-  // Normalize response -> always return array
-  const normalizeArray = (res) => {
-    if (!res) return [];
-    // Prefer res.data.data, then res.data, then res
-    if (Array.isArray(res?.data?.data)) return res.data.data;
-    if (Array.isArray(res?.data)) return res.data;
-    if (Array.isArray(res)) return res;
-    return [];
-  };
+  const { categories, loadingCategories } = useCategories();
 
-  // Load products + categories
-  const fetchData = async () => {
+  const fetchProducts = async () => {
     try {
-      setLoading(true);
-      const [prodRes, catRes] = await Promise.all([
-        getProducts(),
-        getCategories(),
-      ]);
+      setLoadingProducts(true);
+      // For POS, request many items
+      const res = await getProducts("?limit=1000");
+      const payload = res?.data ?? res;
+      let arr = [];
+      if (Array.isArray(payload.products)) arr = payload.products;
+      else if (Array.isArray(payload.data)) arr = payload.data;
+      else if (Array.isArray(payload)) arr = payload;
+      else arr = [];
 
-      const prodList = normalizeArray(prodRes);
-      const catList = normalizeArray(catRes);
-
-      setProducts(prodList);
-      setCategories(catList);
+      const normalized = arr.map(normalizeProduct).filter(Boolean);
+      setProducts(normalized);
     } catch (err) {
       console.error("Error loading products:", err);
       setProducts([]);
-      setCategories([]);
     } finally {
-      setLoading(false);
+      setLoadingProducts(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchProducts();
   }, []);
 
-  // Helper untuk mendapatkan id kategori dari product (support object or string)
-  const getProductCategoryId = (p) => {
-    // possible shapes: p.categoryId (string), p.categoryId._id, p.category (string), p.categoryId.id
-    return (
-      p?.categoryId?._id ??
-      p?.categoryId?.id ??
-      p?.categoryId ??
-      p?.category ??
-      null
-    );
-  };
-
-  // Filter produk berdasarkan kategori (robust terhadap berbagai shape)
   const filteredProducts =
     activeCategory === "all"
       ? products
       : products.filter((p) => {
-          const catId = getProductCategoryId(p);
-          return catId !== null && String(catId) === String(activeCategory);
+          return (
+            p.categoryId && String(p.categoryId) === String(activeCategory)
+          );
         });
-
-  // Refresh (misalnya setelah checkout)
-  const refreshProducts = () => fetchData();
 
   return {
     products: filteredProducts,
@@ -77,7 +69,7 @@ export default function useProducts() {
     categories,
     activeCategory,
     setActiveCategory,
-    refreshProducts,
-    loading,
+    loading: loadingProducts || loadingCategories,
+    refreshProducts: fetchProducts,
   };
 }

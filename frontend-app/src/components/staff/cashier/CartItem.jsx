@@ -1,5 +1,4 @@
 // src/components/staff/cashier/CartItem.jsx
-
 import { Plus, Minus, Trash } from "lucide-react";
 
 export default function CartItem({ item, onAdd, onMinus, onRemove }) {
@@ -8,7 +7,7 @@ export default function CartItem({ item, onAdd, onMinus, onRemove }) {
       <div>
         <div className="text-sm font-semibold text-amber-800">{item.name}</div>
         <div className="text-xs text-gray-500">
-          Rp {item.price.toLocaleString()}
+          Rp {Number(item.price ?? 0).toLocaleString()}
         </div>
       </div>
 
