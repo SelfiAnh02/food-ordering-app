@@ -30,9 +30,6 @@ const menu = [
   },
 ];
 
-/**
- * AdminLayout
- */
 export default function StaffMainLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();

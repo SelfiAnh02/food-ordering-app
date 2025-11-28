@@ -1,0 +1,131 @@
+// src/pages/staff/CashierDashboard.jsx
+import { useEffect, useCallback, useState } from "react";
+import useProducts from "../../hooks/staff/useProducts";
+import useCart from "../../hooks/staff/useCart";
+
+import CategoryTabs from "../../components/staff/cashier/CategoryTabs";
+import ProductList from "../../components/staff/cashier/ProductList";
+import Cart from "../../components/staff/cashier/Cart";
+
+import { createOrder } from "../../services/staff/orderService";
+
+export default function CashierDashboard() {
+  const {
+    products,
+    categories,
+    activeCategory,
+    setActiveCategory,
+    loading,
+    refreshProducts,
+  } = useProducts();
+
+  const {
+    items,
+    addToCart,
+    decreaseQty,
+    increaseQty,
+    removeItem,
+    clearCart,
+    total,
+  } = useCart();
+
+  // FIX: proper useState pair
+  const [submitting, setSubmitting] = useState(false);
+
+  // Ensure active category default (only set when undefined/null)
+  useEffect(() => {
+    if (!activeCategory) setActiveCategory("all");
+  }, [categories, activeCategory, setActiveCategory]);
+
+  // Guarded add
+  const handleSelectProduct = useCallback(
+    (product) => {
+      if (!product) return;
+      const stockNum = Number(product.stock ?? 0);
+      if (stockNum <= 0) return;
+      addToCart(product);
+    },
+    [addToCart]
+  );
+
+  // Submit order to backend
+  const handleSubmitOrder = useCallback(async () => {
+    if (!items || items.length === 0) return;
+    setSubmitting(true);
+    try {
+      const payload = {
+        items: items.map((it) => ({
+          product: it._id,
+          quantity: it.qty,
+        })),
+        orderType: "Kasir",
+        paymentMethod: "cash",
+      };
+
+      const res = await createOrder(payload);
+      if (res && res.data && res.data.success) {
+        await refreshProducts();
+        clearCart();
+        window.alert("Transaksi berhasil disimpan.");
+      } else {
+        const msg = res?.data?.message || "Gagal menyimpan transaksi";
+        window.alert(msg);
+      }
+    } catch (err) {
+      console.error("Error creating order:", err);
+      window.alert("Terjadi kesalahan saat menyimpan transaksi.");
+    } finally {
+      setSubmitting(false);
+    }
+  }, [items, refreshProducts, clearCart]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full text-gray-600">
+        Loading...
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-full bg-gray-50">
+      {/* LEFT */}
+      <div className="flex-1 p-4 border-r overflow-auto">
+        <CategoryTabs
+          categories={categories}
+          active={activeCategory}
+          onChange={setActiveCategory}
+        />
+
+        {!Array.isArray(products) || products.length === 0 ? (
+          <div className="mt-8 text-center text-gray-500">
+            Tidak ada produk untuk ditampilkan.
+            <div className="text-xs text-gray-400 mt-2">
+              Cek endpoint <code>/api/staff/products</code> atau tekan refresh.
+              <button
+                type="button"
+                onClick={refreshProducts}
+                className="ml-2 px-3 py-1 rounded bg-amber-600 text-white text-sm"
+              >
+                Refresh
+              </button>
+            </div>
+          </div>
+        ) : (
+          <ProductList products={products} onSelect={handleSelectProduct} />
+        )}
+      </div>
+
+      {/* RIGHT */}
+      <Cart
+        cart={items}
+        onAdd={increaseQty}
+        onMinus={decreaseQty}
+        onRemove={removeItem}
+        onSubmit={handleSubmitOrder}
+        total={total}
+        submitting={submitting}
+      />
+    </div>
+  );
+}

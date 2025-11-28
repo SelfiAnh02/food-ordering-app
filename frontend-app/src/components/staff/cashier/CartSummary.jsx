@@ -1,6 +1,6 @@
 // src/components/staff/cashier/CartSummary.jsx
 
-export default function CartSummary({ total, onSubmit, disabled }) {
+export default function CartSummary({ total, onSubmit, disabled, submitting }) {
   return (
     <div className="border-t pt-3 mt-3">
       <div className="flex justify-between text-sm mb-3">
@@ -19,7 +19,7 @@ export default function CartSummary({ total, onSubmit, disabled }) {
             : "bg-amber-600 hover:bg-amber-700"
         }`}
       >
-        Simpan Transaksi
+        {submitting ? "Menyimpan..." : "Simpan Transaksi"}
       </button>
     </div>
   );

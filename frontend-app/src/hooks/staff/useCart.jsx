@@ -6,10 +6,10 @@ export default function useCart() {
   /** Add product to cart */
   const addToCart = useCallback((product) => {
     setItems((prev) => {
-      const exist = prev.find((i) => i.id === product.id);
+      const exist = prev.find((i) => i._id === product._id);
       if (exist) {
         return prev.map((i) =>
-          i.id === product.id ? { ...i, qty: i.qty + 1 } : i
+          i._id === product._id ? { ...i, qty: i.qty + 1 } : i
         );
       }
       return [...prev, { ...product, qty: 1 }];
@@ -19,7 +19,7 @@ export default function useCart() {
   /** Increase qty */
   const increaseQty = useCallback((id) => {
     setItems((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, qty: i.qty + 1 } : i))
+      prev.map((i) => (i._id === id ? { ...i, qty: i.qty + 1 } : i))
     );
   }, []);
 
@@ -27,14 +27,14 @@ export default function useCart() {
   const decreaseQty = useCallback((id) => {
     setItems((prev) =>
       prev.map((i) =>
-        i.id === id ? { ...i, qty: i.qty > 1 ? i.qty - 1 : 1 } : i
+        i._id === id ? { ...i, qty: i.qty > 1 ? i.qty - 1 : 1 } : i
       )
     );
   }, []);
 
   /** Remove item */
   const removeItem = useCallback((id) => {
-    setItems((prev) => prev.filter((i) => i.id !== id));
+    setItems((prev) => prev.filter((i) => i._id !== id));
   }, []);
 
   /** Clear cart */

@@ -1,3 +1,4 @@
+// frontend-app/src/services/staff/categoryService.js
 import api from "../../api/axios";
 
 export async function getCategories() {
