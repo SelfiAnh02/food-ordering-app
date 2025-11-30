@@ -88,9 +88,18 @@ export default function CashierDashboard() {
   }
 
   return (
-    <div className="flex h-full bg-gray-50">
+    <div
+      className="
+      grid 
+      grid-cols-1
+      md:grid-cols-[2fr_1fr] 
+      h-full 
+      bg-gray-50 
+      overflow-hidden
+    "
+    >
       {/* LEFT */}
-      <div className="flex-1 p-4 border-r overflow-auto">
+      <div className="p-4 border-r overflow-auto">
         <CategoryTabs
           categories={categories}
           active={activeCategory}
@@ -117,15 +126,17 @@ export default function CashierDashboard() {
       </div>
 
       {/* RIGHT */}
-      <Cart
-        cart={items}
-        onAdd={increaseQty}
-        onMinus={decreaseQty}
-        onRemove={removeItem}
-        onSubmit={handleSubmitOrder}
-        total={total}
-        submitting={submitting}
-      />
+      <div className="bg-white border-l shadow-sm">
+        <Cart
+          cart={items}
+          onAdd={increaseQty}
+          onMinus={decreaseQty}
+          onRemove={removeItem}
+          onSubmit={handleSubmitOrder}
+          total={total}
+          submitting={submitting}
+        />
+      </div>
     </div>
   );
 }
