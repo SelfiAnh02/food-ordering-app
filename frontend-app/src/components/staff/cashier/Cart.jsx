@@ -1,8 +1,7 @@
-// src/components/staff/cashier/Cart.jsx
 import { useState } from "react";
 import CartItem from "./CartItem";
 import CartSummary from "./CartSummary";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 
 export default function Cart({
   cart,
@@ -13,24 +12,22 @@ export default function Cart({
   total,
   submitting = false,
 }) {
-  // mobile: collapsed by default
-  const [open, setOpen] = useState(false);
-
-  // compact total for bottom bar
-  const compactTotal = total ?? 0;
+  const [openMobile, setOpenMobile] = useState(false);
 
   return (
     <>
-      {/* Desktop: static sidebar */}
-      <div className="hidden md:flex md:flex-col md:w-[380px] bg-white shadow-lg p-4">
-        <h2 className="text-lg font-semibold text-amber-800">Keranjang</h2>
+      {/* DESKTOP & TABLET */}
+      <div className="hidden md:flex flex-col h-full w-[320px] lg:w-[360px] bg-white shadow-md relative">
+        {/* HEADER */}
+        <div className="p-4 pb-2 bg-white sticky top-0 z-20 shadow-sm">
+          <h2 className="text-lg font-semibold text-amber-800 text-center">
+            Keranjang
+          </h2>
+        </div>
 
-        <div className="flex-1 overflow-y-auto mt-3 space-y-3">
-          {cart.length === 0 ? (
-            <div className="text-gray-400 text-sm text-center">
-              Keranjang kosong
-            </div>
-          ) : (
+        {/* LIST — SCROLL */}
+        <div className="flex-1 overflow-y-auto px-4 space-y-3 py-4 pb-28">
+          {cart.length ? (
             cart.map((item) => (
               <CartItem
                 key={item._id}
@@ -40,96 +37,77 @@ export default function Cart({
                 onRemove={() => onRemove(item._id)}
               />
             ))
+          ) : (
+            <div className="text-gray-400 text-center mt-4">
+              Keranjang kosong
+            </div>
           )}
         </div>
 
-        <CartSummary
-          total={total}
-          onSubmit={onSubmit}
-          disabled={cart.length === 0 || submitting}
-        />
+        {/* FIXED SUMMARY BUTTON */}
+        <div className="sticky bottom-0 bg-white p-2 shadow-lg z-30">
+          <CartSummary
+            total={total}
+            disabled={!cart.length || submitting}
+            onSubmit={onSubmit}
+          />
+        </div>
       </div>
 
-      {/* Mobile: fixed bottom compact bar + expandable panel */}
-      <div className="md:hidden">
-        {/* Compact bar */}
-        <div className="fixed bottom-0 left-0 right-0 z-40 px-4 py-2 bg-white border-t shadow-inner flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="text-sm font-semibold text-amber-800">
-              Keranjang
-            </div>
-            <div className="text-xs text-gray-600">({cart.length})</div>
-            <div className="ml-3 text-sm font-bold text-[#FF8A00]">
-              Rp {Number(compactTotal).toLocaleString()}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setOpen((s) => !s)}
-              type="button"
-              className="p-2 rounded bg-amber-600 text-white"
-              aria-expanded={open}
-            >
-              {open ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
-            </button>
-          </div>
-        </div>
-
-        {/* Expandable panel */}
-        <div
-          className={`fixed left-0 right-0 bottom-14 z-40 transition-transform duration-200 ${
-            open ? "translate-y-0" : "translate-y-full"
-          }`}
+      {/* MOBILE BOTTOM BAR */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg px-4 py-2 flex items-center justify-between z-40">
+        <button
+          className="flex items-center gap-2 text-amber-800 font-semibold"
+          onClick={() => setOpenMobile(true)}
         >
-          <div className="mx-3 mb-3 bg-white rounded-t-xl shadow-lg p-4 max-h-[60vh] overflow-auto">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-md font-semibold text-amber-800">
-                Keranjang
-              </h3>
-              <button
-                onClick={() => setOpen(false)}
-                type="button"
-                className="text-gray-600"
-              >
-                Tutup
-              </button>
+          <ShoppingCart size={20} /> ({cart.length})
+        </button>
+
+        <button
+          className="bg-amber-600 text-white px-3 py-2 rounded-lg text-sm"
+          disabled={!cart.length || submitting}
+          onClick={onSubmit}
+        >
+          Simpan
+        </button>
+      </div>
+
+      {/* MOBILE MODAL CART */}
+      {openMobile && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex justify-end">
+          <div className="w-72 bg-white h-full p-4 shadow-xl flex flex-col">
+            <button
+              className="text-gray-500 mb-3 text-sm"
+              onClick={() => setOpenMobile(false)}
+            >
+              Tutup
+            </button>
+
+            <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+              {cart.map((item) => (
+                <CartItem
+                  key={item._id}
+                  item={item}
+                  onAdd={() => onAdd(item._id)}
+                  onMinus={() => onMinus(item._id)}
+                  onRemove={() => onRemove(item._id)}
+                />
+              ))}
             </div>
 
-            <div className="space-y-3">
-              {cart.length === 0 ? (
-                <div className="text-gray-400 text-sm text-center">
-                  Keranjang kosong
-                </div>
-              ) : (
-                cart.map((item) => (
-                  <CartItem
-                    key={item._id}
-                    item={item}
-                    onAdd={() => onAdd(item._id)}
-                    onMinus={() => onMinus(item._id)}
-                    onRemove={() => onRemove(item._id)}
-                  />
-                ))
-              )}
-            </div>
-
-            <div className="mt-4">
+            <div className="pt-3 border-t mt-3 bg-white sticky bottom-0">
               <CartSummary
                 total={total}
+                disabled={!cart.length || submitting}
                 onSubmit={() => {
+                  setOpenMobile(false);
                   onSubmit();
-                  setOpen(false);
                 }}
-                disabled={cart.length === 0 || submitting}
               />
             </div>
           </div>
         </div>
-
-        {/* spacing so page content not hidden behind fixed bar */}
-        <div className="h-20" />
-      </div>
+      )}
     </>
   );
 }

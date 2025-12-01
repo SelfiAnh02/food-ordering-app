@@ -90,16 +90,18 @@ export default function CashierDashboard() {
   return (
     <div
       className="
+      m-0
       grid 
       grid-cols-1
       md:grid-cols-[2fr_1fr] 
       h-full 
       bg-gray-50 
       overflow-hidden
+      rounded-lg
     "
     >
       {/* LEFT */}
-      <div className="p-4 border-r overflow-auto">
+      <div className="p-4 bg-white flex flex-col h-full overflow-hidden">
         <CategoryTabs
           categories={categories}
           active={activeCategory}
@@ -121,12 +123,14 @@ export default function CashierDashboard() {
             </div>
           </div>
         ) : (
-          <ProductList products={products} onSelect={handleSelectProduct} />
+          <div className="flex-1 overflow-y-auto mt-2 pr-1 pb-24">
+            <ProductList products={products} onSelect={handleSelectProduct} />
+          </div>
         )}
       </div>
 
       {/* RIGHT */}
-      <div className="bg-white border-l shadow-sm">
+      <div className="bg-white border-l shadow-sm h-screen flex flex-col">
         <Cart
           cart={items}
           onAdd={increaseQty}
