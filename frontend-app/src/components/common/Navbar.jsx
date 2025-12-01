@@ -15,11 +15,11 @@ export default function Navbar({ onToggleSidebar, onLogout, pageTitle }) {
       {/* left: toggle + title */}
       <div className="flex items-center gap-3 min-w-0">
         <button
+          type="button"
           onClick={onToggleSidebar}
-          aria-label="Toggle sidebar"
-          className="p-2 rounded-md hover:bg-amber-50 md:hidden"
+          className="lg:hidden p-2 rounded-md text-amber-800 hover:bg-amber-100"
         >
-          <Menu className="w-5 h-5 text-amber-800" />
+          <Menu size={22} />
         </button>
 
         <div className="flex flex-col">

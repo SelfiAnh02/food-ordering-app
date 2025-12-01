@@ -1,7 +1,7 @@
-// frontend-app/src/layouts/staff/StaffMainLayout.jsx
+// src/layouts/staff/StaffMainLayout.jsx
 
 import { useMemo, useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "../../components/common/Sidebar";
 import Navbar from "../../components/common/Navbar";
 import { BarChart2, Bell, List, ShoppingCart } from "lucide-react";
@@ -33,28 +33,34 @@ const menu = [
 export default function StaffMainLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const toggleSidebar = () => setSidebarOpen((s) => !s);
   const closeSidebar = () => setSidebarOpen(false);
 
+  // FIX pageTitle using useLocation()
   const pageTitle = useMemo(() => {
-    const map = {
+    const path = location.pathname.replace(/\/+$/, "");
+
+    const mapping = {
+      "/staff": "Orders (Cashier)",
       "/staff/": "Orders (Cashier)",
       "/staff/incoming-orders": "Incoming Orders",
       "/staff/all-orders": "All Orders",
     };
-    const path = location.pathname.replace(/\/+$/, "");
-    const titleBase =
-      map[path] ??
-      (() => {
-        const seg = path.split("/").filter(Boolean).pop() || "Orders";
-        return seg
-          .split("-")
-          .map((s) => (s[0] ? s[0].toUpperCase() + s.slice(1) : s))
-          .join(" ");
-      })();
-    return `${titleBase} - Staff`;
-  }, []);
+
+    if (mapping[path]) return `${mapping[path]} - Staff`;
+
+    // Default fallback title
+    const seg = path.split("/").filter(Boolean).pop() || "Orders";
+    const title =
+      seg
+        .split("-")
+        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+        .join(" ") + " - Staff";
+
+    return title;
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     try {
@@ -66,48 +72,50 @@ export default function StaffMainLayout({ children }) {
   };
 
   return (
-    <div className="h-screen w-screen flex bg-gray-100 overflow-hidden">
-      {/* Desktop sidebar — fixed (hanya tampil ≥ lg) */}
-      <div className="hidden lg:block">
+    <div className="h-screen w-screen flex bg-gray-100 overflow-hidden relative">
+      {/* SIDEBAR DESKTOP (lg+) — FIXED LEFT */}
+      <div className="hidden lg:block fixed left-0 top-0 bottom-0 w-60 bg-white border-r z-40">
         <Sidebar menu={menu} />
       </div>
 
-      {/* Mobile + Tablet sidebar overlay */}
+      {/* SIDEBAR OVERLAY MOBILE/TABLET */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
+        <div className="fixed inset-0 z-50 lg:hidden">
           <div
             className="absolute inset-0 bg-black/40"
             onClick={closeSidebar}
           />
-          <div className="absolute left-0 top-0 bottom-0 w-60 bg-white border-r z-50">
+
+          <div className="absolute left-0 top-0 bottom-0 w-60 bg-white border-r shadow-xl z-50">
             <Sidebar menu={menu} />
           </div>
         </div>
       )}
 
-      {/* Content wrapper — offset left hanya di desktop */}
-      <div className="flex flex-col w-full lg:ml-60">
-        {/* Navbar — sidebar offset hanya desktop */}
-        <div
-          className={`
-              fixed top-0 right-0 z-50 w-full 
-              transition-all duration-200
-              ${sidebarOpen ? "left-60" : "left-0"} 
-              lg:left-60
-          `}
-        >
-          <Navbar
-            onToggleSidebar={toggleSidebar}
-            onLogout={handleLogout}
-            pageTitle={pageTitle}
-          />
-        </div>
-
-        {/* Main content */}
-        <main className="flex-1 min-h-screen overflow-y-auto px-6 py-8 pt-20 overflow-x-hidden">
-          {children ? children : <Outlet />}
-        </main>
+      {/* NAVBAR — NO MORE PUSHING LEFT */}
+      <div className="fixed top-0 left-0 right-0 z-30">
+        <Navbar
+          onToggleSidebar={toggleSidebar}
+          onLogout={handleLogout}
+          pageTitle={pageTitle}
+        />
       </div>
+
+      {/* MAIN CONTENT */}
+      <main
+        className="
+          flex-1 
+          pt-18
+          w-full 
+          overflow-y-auto 
+          overflow-x-hidden 
+          px-2 
+          lg:pl-64   /* offset hanya saat desktop */
+          pb-2
+        "
+      >
+        {children ? children : <Outlet />}
+      </main>
     </div>
   );
 }

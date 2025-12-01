@@ -2,8 +2,8 @@
 
 export default function CartSummary({ total, onSubmit, disabled, submitting }) {
   return (
-    <div className="border-t pt-3 mt-3">
-      <div className="flex justify-between text-sm mb-3">
+    <div className="border-t pt-2 mb-2">
+      <div className="flex justify-between text-sm mb-2">
         <span className="text-gray-600">Total:</span>
         <span className="font-bold text-[#FF8A00] text-lg">
           Rp {total.toLocaleString()}
