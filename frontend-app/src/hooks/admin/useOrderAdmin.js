@@ -260,8 +260,6 @@ export default function useOrderAdmin(initialFilters = {}) {
   useEffect(() => {
     fetchStats();
   }, [fetchStats]);
-
-  /** Derived stats computed from ALL orders (not only visible) */
   const derivedStats = useMemo(() => {
     const all = allOrders || [];
 
@@ -301,14 +299,8 @@ export default function useOrderAdmin(initialFilters = {}) {
 
     return { totalRevenue, totalOrdersToday, deliveredCount };
   }, [allOrders]);
-
-  // Merge server stats (if present) with derived stats; prefer server for fields that exist,
-  // but for the specific definitions you requested we prefer derived values where appropriate:
+  // Merge server stats with derived stats
   const effectiveStats = useMemo(() => {
-    // use server stats if present, but replace/ensure:
-    // - totalRevenue should reflect sum of paid payments -> use derivedStats.totalRevenue
-    // - totalOrders should be today's orders -> use derivedStats.totalOrdersToday
-    // - delivered count should be count of delivered orders -> use derivedStats.deliveredCount
     const server = stats ?? {};
     return {
       totalRevenue: derivedStats.totalRevenue,
@@ -396,8 +388,6 @@ export default function useOrderAdmin(initialFilters = {}) {
       .sort((a, b) => b.totalQuantity - a.totalQuantity)
       .slice(0, 10);
   }, [allOrders, filters.startDate, filters.endDate, filters.orderStatus]);
-
-  // export these in return
 
   return {
     orders, // visible (filtered)
