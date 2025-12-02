@@ -1,4 +1,3 @@
-// src/pages/staff/CashierDashboard.jsx
 import { useEffect, useCallback, useState } from "react";
 import useProducts from "../../hooks/staff/useProducts";
 import useCart from "../../hooks/staff/useCart";
@@ -6,6 +5,7 @@ import useCart from "../../hooks/staff/useCart";
 import CategoryTabs from "../../components/staff/cashier/CategoryTabs";
 import ProductList from "../../components/staff/cashier/ProductList";
 import Cart from "../../components/staff/cashier/Cart";
+import PaymentMethodModal from "../../components/staff/cashier/PaymentMethodModal";
 
 import { createOrder } from "../../services/staff/orderService";
 
@@ -29,10 +29,11 @@ export default function CashierDashboard() {
     total,
   } = useCart();
 
-  // FIX: proper useState pair
   const [submitting, setSubmitting] = useState(false);
 
-  // Ensure active category default (only set when undefined/null)
+  // Payment modal state
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+
   useEffect(() => {
     if (!activeCategory) setActiveCategory("all");
   }, [categories, activeCategory, setActiveCategory]);
@@ -48,36 +49,52 @@ export default function CashierDashboard() {
     [addToCart]
   );
 
-  // Submit order to backend
-  const handleSubmitOrder = useCallback(async () => {
+  // open payment modal (called by Cart onSubmit)
+  const requestPayment = useCallback(() => {
     if (!items || items.length === 0) return;
-    setSubmitting(true);
-    try {
-      const payload = {
-        items: items.map((it) => ({
-          product: it._id,
-          quantity: it.qty,
-        })),
-        orderType: "Kasir",
-        paymentMethod: "cash",
-      };
+    setPaymentModalOpen(true);
+  }, [items]);
 
-      const res = await createOrder(payload);
-      if (res && res.data && res.data.success) {
-        await refreshProducts();
-        clearCart();
-        window.alert("Transaksi berhasil disimpan.");
-      } else {
-        const msg = res?.data?.message || "Gagal menyimpan transaksi";
-        window.alert(msg);
+  // actual order creation after selecting payment method
+  const handleCreateOrderWithMethod = useCallback(
+    async (method) => {
+      if (!items || items.length === 0) {
+        setPaymentModalOpen(false);
+        return;
       }
-    } catch (err) {
-      console.error("Error creating order:", err);
-      window.alert("Terjadi kesalahan saat menyimpan transaksi.");
-    } finally {
-      setSubmitting(false);
-    }
-  }, [items, refreshProducts, clearCart]);
+
+      setPaymentModalOpen(false);
+      setSubmitting(true);
+
+      try {
+        const payload = {
+          items: items.map((it) => ({
+            product: it._id,
+            quantity: it.qty,
+          })),
+          orderType: "Kasir",
+          paymentMethod: method, // e.g. "cash", "qris", "debit", "transfer"
+        };
+
+        const res = await createOrder(payload);
+
+        if (res && res.data && res.data.success) {
+          await refreshProducts();
+          clearCart();
+          window.alert("Transaksi berhasil disimpan.");
+        } else {
+          const msg = res?.data?.message || "Gagal menyimpan transaksi";
+          window.alert(msg);
+        }
+      } catch (err) {
+        console.error("Error creating order:", err);
+        window.alert("Terjadi kesalahan saat menyimpan transaksi.");
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [items, refreshProducts, clearCart]
+  );
 
   if (loading) {
     return (
@@ -123,24 +140,44 @@ export default function CashierDashboard() {
             </div>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto mt-2 pr-1 pb-24">
+          <div className="flex-1 overflow-y-auto mt-2 hidden-scrollbar pb-24">
             <ProductList products={products} onSelect={handleSelectProduct} />
           </div>
         )}
       </div>
 
-      {/* RIGHT */}
-      <div className="bg-white border-l shadow-sm h-screen flex flex-col">
+      {/* RIGHT — hanya tampil mulai md */}
+      <div className="hidden md:flex bg-white shadow-sm h-screen flex-col">
         <Cart
           cart={items}
           onAdd={increaseQty}
           onMinus={decreaseQty}
           onRemove={removeItem}
-          onSubmit={handleSubmitOrder}
+          onSubmit={requestPayment}
           total={total}
           submitting={submitting}
         />
       </div>
+
+      {/* MOBILE CART — tampil di mobile */}
+      <div className="md:hidden">
+        <Cart
+          cart={items}
+          onAdd={increaseQty}
+          onMinus={decreaseQty}
+          onRemove={removeItem}
+          onSubmit={requestPayment}
+          total={total}
+          submitting={submitting}
+        />
+      </div>
+
+      {/* Payment method modal */}
+      <PaymentMethodModal
+        open={paymentModalOpen}
+        onClose={() => setPaymentModalOpen(false)}
+        onChoose={handleCreateOrderWithMethod}
+      />
     </div>
   );
 }

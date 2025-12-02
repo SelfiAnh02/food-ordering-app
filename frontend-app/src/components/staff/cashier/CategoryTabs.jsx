@@ -3,7 +3,7 @@ export default function CategoryTabs({ categories = [], active, onChange }) {
   return (
     // sticky wrapper: menempel di atas scroll container
     <div className="sticky top-0 z-20 mt-0 ">
-      <div class="flex gap-2 overflow-x-auto hide-scrollbar px-1 bg-transparent">
+      <div className="flex gap-2 overflow-x-auto hide-scrollbar px-1 bg-transparent">
         <button
           onClick={() => onChange("all")}
           type="button"

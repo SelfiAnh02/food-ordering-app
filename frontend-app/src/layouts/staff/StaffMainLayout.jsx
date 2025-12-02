@@ -43,8 +43,7 @@ export default function StaffMainLayout({ children }) {
     const path = location.pathname.replace(/\/+$/, "");
 
     const mapping = {
-      "/staff": "Orders (Cashier)",
-      "/staff/": "Orders (Cashier)",
+      "/staff": "Orders",
       "/staff/incoming-orders": "Incoming Orders",
       "/staff/all-orders": "All Orders",
     };
