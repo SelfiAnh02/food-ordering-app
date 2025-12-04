@@ -7,7 +7,7 @@ const orderSchema = new mongoose.Schema(
       ref: "User", // relasi ke schema User.js
       required: false,
     },
-    
+
     items: [
       {
         product: {
@@ -35,9 +35,14 @@ const orderSchema = new mongoose.Schema(
       default: "pending",
     },
 
+    customerName: {
+      type: String,
+      required: false,
+    },
+
     tableNumber: {
-        type: String,
-        required: true,
+      type: String,
+      required: false,
     },
 
     orderType: {
@@ -45,7 +50,7 @@ const orderSchema = new mongoose.Schema(
       enum: ["Dine-In", "Takeaway", "Delivery"],
       default: "Dine-In", // Dine-In, Takeaway, Delivery
     },
-    
+
     payment: {
       status: {
         type: String,
@@ -57,12 +62,13 @@ const orderSchema = new mongoose.Schema(
     },
 
     paymentDetails: {
-      method: { type: String, enum: ["cash", "qris", "edc"] },
+      method: { type: String, enum: ["cash", "qris", "edc", "transfer"] },
       paidAt: { type: Date },
     },
   },
   { timestamps: true }
 );
 
-const OrderModel = mongoose.models.order || mongoose.model("Order", orderSchema);
+const OrderModel =
+  mongoose.models.order || mongoose.model("Order", orderSchema);
 export default OrderModel;
