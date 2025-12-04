@@ -14,11 +14,6 @@ const menu = [
     icon: <ShoppingCart size={18} />,
   },
   {
-    to: "/staff/incoming-orders",
-    label: "Incoming Orders",
-    icon: <Bell size={18} />,
-  },
-  {
     to: "/staff/all-orders",
     label: "All Orders",
     icon: <List size={18} />,
@@ -44,7 +39,6 @@ export default function StaffMainLayout({ children }) {
 
     const mapping = {
       "/staff": "Orders",
-      "/staff/incoming-orders": "Incoming Orders",
       "/staff/all-orders": "All Orders",
     };
 
@@ -91,8 +85,8 @@ export default function StaffMainLayout({ children }) {
         </div>
       )}
 
-      {/* NAVBAR — NO MORE PUSHING LEFT */}
-      <div className="fixed top-0 left-0 right-0 z-30">
+      {/* NAVBAR — shifted right on desktop so it doesn't overlap sidebar */}
+      <div className="fixed top-0 left-0 right-0 lg:left-60 z-30">
         <Navbar
           onToggleSidebar={toggleSidebar}
           onLogout={handleLogout}
@@ -109,7 +103,7 @@ export default function StaffMainLayout({ children }) {
           overflow-y-auto 
           overflow-x-hidden 
           px-2 
-          lg:pl-64   /* offset hanya saat desktop */
+          lg:pl-60   /* offset sama dengan lebar sidebar (w-60) */
           pb-2
         "
       >

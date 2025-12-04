@@ -73,7 +73,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         {/* Default redirect: ubah ke /login supaya tidak auto-landing ke admin */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<Navigate to="staff/login" replace />} />
 
         {/* LOGIN ADMIN */}
         <Route path="/login" element={<Login mode="admin" />} />

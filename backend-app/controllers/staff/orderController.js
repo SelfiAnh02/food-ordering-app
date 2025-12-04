@@ -1,24 +1,42 @@
 import orderModel from "../../models/orderModel.js";
 import productModel from "../../models/productModel.js";
 
-
 // Create Order (Kasir)
 export const createOrderKasir = async (req, res) => {
   try {
-    const { items, orderType, tableNumber, paymentMethod } = req.body;
+    const { items, orderType, tableNumber, paymentMethod, customerName } =
+      req.body;
 
+    // --- Basic Validation ---
     if (!items || items.length === 0) {
-      return res.status(400).json({ success: false, message: "Items are required" });
+      return res.status(400).json({
+        success: false,
+        message: "Items are required",
+      });
     }
 
-    // Validasi tableNumber kalau dine-in
-    if (orderType === "Dine-In" && !tableNumber) {
+    // ❗ Sesuaikan dengan frontend (lowercase)
+    const dineIn = orderType === "dine-in";
+    const takeaway = orderType === "takeaway";
+    const delivery = orderType === "delivery";
+
+    // Validasi Dine-In
+    if (dineIn && !tableNumber) {
       return res.status(400).json({
         success: false,
         message: "tableNumber is required for Dine-In orders",
       });
     }
 
+    // Validasi Takeaway / Delivery harus ada customerName
+    if ((takeaway || delivery) && !customerName) {
+      return res.status(400).json({
+        success: false,
+        message: "customerName is required for Takeaway & Delivery orders",
+      });
+    }
+
+    // --- Calculate Total & Validate Stock ---
     let totalPrice = 0;
     const productUpdates = [];
 
@@ -47,22 +65,25 @@ export const createOrderKasir = async (req, res) => {
       });
     }
 
-    // Update stok
+    // --- Update Stock ---
     for (const update of productUpdates) {
       await productModel.findByIdAndUpdate(update.productId, {
         $inc: { stock: -update.quantity },
       });
     }
 
-    // Buat order langsung "paid"
+    // --- Create Order ---
     const newOrder = new orderModel({
-      userId: null, // order kasir tidak perlu user login
+      userId: null, // kasir tidak terkait user login
       items,
       totalPrice,
-      orderType,
-      tableNumber,
-      orderStatus: "pending", // tetap pending sampai makanan siap
-      payment: { status: "paid" }, // langsung paid
+      orderType, // sudah lowercase sesuai request
+      tableNumber: dineIn ? tableNumber : null,
+      customerName: takeaway || delivery ? customerName : null,
+      orderStatus: "pending",
+      payment: {
+        status: "paid",
+      },
       paymentDetails: {
         method: paymentMethod,
         paidAt: new Date(),
@@ -71,14 +92,14 @@ export const createOrderKasir = async (req, res) => {
 
     await newOrder.save();
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Order created successfully by cashier",
       data: newOrder,
     });
   } catch (error) {
     console.error("Error creating cashier order:", error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to create cashier order",
       error: error.message,
@@ -98,7 +119,9 @@ export const getAllOrders = async (req, res) => {
       if (!validStatus.includes(statusQuery)) {
         return res.status(400).json({
           success: false,
-          message: `Status "${statusQuery}" tidak valid. Gunakan: ${validStatus.join(", ")}`,
+          message: `Status "${statusQuery}" tidak valid. Gunakan: ${validStatus.join(
+            ", "
+          )}`,
         });
       }
       filter.orderStatus = statusQuery;
@@ -106,7 +129,9 @@ export const getAllOrders = async (req, res) => {
 
     const orders = await orderModel
       .find(filter)
-      .select("_id items totalPrice tableNumber orderType orderStatus createdAt")
+      .select(
+        "_id items totalPrice tableNumber orderType orderStatus createdAt"
+      )
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -125,14 +150,13 @@ export const getAllOrders = async (req, res) => {
   }
 };
 
-
 // Get Order by ID
 export const getOrderById = async (req, res) => {
   try {
     const order = await orderModel
       .findById(req.params.id)
-      .select("_id items totalPrice tableNumber orderType orderStatus")
-      
+      .select("_id items totalPrice tableNumber orderType orderStatus");
+
     if (!order) {
       return res.status(404).json({
         success: false,
@@ -155,7 +179,6 @@ export const getOrderById = async (req, res) => {
   }
 };
 
-
 // Update Order Status (Kasir only)
 export const updateOrderStatus = async (req, res) => {
   try {
@@ -167,7 +190,9 @@ export const updateOrderStatus = async (req, res) => {
     if (!validStatus.includes(status)) {
       return res.status(400).json({
         success: false,
-        message: `Status "${status}" tidak valid. Gunakan: ${validStatus.join(", ")}`,
+        message: `Status "${status}" tidak valid. Gunakan: ${validStatus.join(
+          ", "
+        )}`,
       });
     }
 
@@ -218,5 +243,3 @@ export const updateOrderStatus = async (req, res) => {
     });
   }
 };
-
-

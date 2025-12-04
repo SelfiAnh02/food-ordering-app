@@ -11,12 +11,16 @@ export default function Cart({
   onSubmit,
   total,
   submitting = false,
+  // parent must pass this to persist notes
+  onUpdateNotes,
 }) {
   const [openMobile, setOpenMobile] = useState(false);
 
   // Default dine-in
   const [tableNumber, setTableNumber] = useState("");
   const [orderType, setOrderType] = useState("dine-in");
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [notesInput, setNotesInput] = useState("");
 
   // Validasi tombol bayar
   const isSubmitDisabled =
@@ -31,6 +35,30 @@ export default function Cart({
       tableNumber: orderType === "dine-in" ? tableNumber : null,
       orderType,
     });
+  };
+
+  const openDetails = (item) => {
+    setSelectedItem(item);
+    setNotesInput(item?.notes || "");
+  };
+
+  const closeDetails = () => {
+    setSelectedItem(null);
+    setNotesInput("");
+  };
+
+  const saveNotes = () => {
+    if (!selectedItem) return;
+
+    if (typeof onUpdateNotes === "function") {
+      onUpdateNotes(selectedItem._id, notesInput);
+    } else {
+      console.warn(
+        "onUpdateNotes not provided — note won't persist to parent state"
+      );
+    }
+
+    closeDetails();
   };
 
   return (
@@ -50,24 +78,17 @@ export default function Cart({
                 value={tableNumber}
                 onChange={(e) => setTableNumber(e.target.value)}
                 disabled={orderType !== "dine-in"}
-                className={`
-                  w-20 px-2 py-1 rounded-lg border text-sm
-                  ${
-                    orderType === "dine-in"
-                      ? "border-amber-300 focus:border-amber-500"
-                      : "bg-gray-100 border-gray-200 cursor-not-allowed"
-                  }
-                `}
+                className={`w-20 px-2 py-1 rounded-lg border text-sm ${
+                  orderType === "dine-in"
+                    ? "border-amber-300 focus:border-amber-500"
+                    : "bg-gray-100 border-gray-200 cursor-not-allowed"
+                }`}
               />
 
               <select
                 value={orderType}
                 onChange={(e) => setOrderType(e.target.value)}
-                className="
-                  px-2 py-1 rounded-lg border border-amber-300 
-                  focus:outline-none focus:border-amber-500
-                  text-sm bg-white
-                "
+                className="px-2 py-1 rounded-lg border border-amber-300 focus:outline-none focus:border-amber-500 text-sm bg-white"
               >
                 <option value="dine-in">Dine-In</option>
                 <option value="takeaway">Takeaway</option>
@@ -87,6 +108,7 @@ export default function Cart({
                 onAdd={() => onAdd(item._id)}
                 onMinus={() => onMinus(item._id)}
                 onRemove={() => onRemove(item._id)}
+                onOpenDetails={openDetails} // pass function, CartItem should call onOpenDetails(item)
               />
             ))
           ) : (
@@ -104,74 +126,150 @@ export default function Cart({
             onSubmit={handleSubmit}
           />
         </div>
+
+        {/* ---------- DESKTOP FLOATING DETAILS PANEL (melayang di atas keranjang) ---------- */}
+        {selectedItem && (
+          <div
+            className="hidden md:block absolute z-50"
+            style={{
+              right: "0.75rem", // jarak dari sisi kanan cart container
+              top: "3.5rem", // sedikit di bawah header (sesuaikan jika perlu)
+              width: "20rem", // w-80 ~ 320px; gunakan angka agar konsisten
+            }}
+            aria-modal="true"
+            role="dialog"
+          >
+            <div className="bg-white rounded-lg shadow-xl p-4 border">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <h3 className="text-lg font-semibold text-amber-800">
+                    {selectedItem.name}
+                  </h3>
+                  {selectedItem.shortDescription && (
+                    <p className="text-sm text-gray-600 mt-1">
+                      {selectedItem.shortDescription}
+                    </p>
+                  )}
+                </div>
+
+                <button
+                  className="text-gray-500 hover:text-gray-700"
+                  onClick={closeDetails}
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* optional: gambar */}
+              {selectedItem.image && (
+                <img
+                  src={selectedItem.image}
+                  alt={selectedItem.name}
+                  className="w-full h-40 object-cover rounded-md mt-3"
+                />
+              )}
+
+              {/* NOTES FORM */}
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Catatan untuk item (opsional)
+                </label>
+                <textarea
+                  value={notesInput}
+                  onChange={(e) => setNotesInput(e.target.value)}
+                  placeholder="Contoh: tanpa bawang, pedas level 2, dsb."
+                  className="mt-2 w-full min-h-[80px] px-3 py-2 border rounded-md resize-y"
+                />
+              </div>
+
+              <div className="mt-4 flex justify-end gap-2">
+                <button
+                  className="px-3 py-2 rounded-md bg-gray-100"
+                  onClick={closeDetails}
+                >
+                  Batal
+                </button>
+                <button
+                  className="px-3 py-2 rounded-md bg-amber-600 text-white"
+                  onClick={saveNotes}
+                >
+                  Simpan
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* MOBILE VIEW */}
       <div className="md:hidden">
-        {/* 🔥 MOBILE BOTTOM BAR — muncul sebelum modal dibuka */}
-        {cart.length > 0 && (
-          <div
-            className="
-              md:hidden fixed bottom-0 left-0 right-0
-            bg-white shadow-md z-40
-              px-4 py-2 flex items-center justify-between
-            "
-          >
-            {/* ICON BUBBLE ORANGE */}
-            <button onClick={() => setOpenMobile(true)} className="relative">
-              <div
-                className="
-                  w-10 h-10 rounded-full 
-                  bg-amber-600 flex items-center justify-center
-                  shadow-md
-                "
-              >
-                <ShoppingCart size={20} className="text-white" />
-              </div>
-
-              {/* BADGE KECIL */}
-              {cart.length > 0 && (
-                <span
-                  className="
-                    absolute -top-1 -right-1
-                    bg-amber-600 text-white 
-                    text-[10px] font-semibold
-                    px-1.5 py-[1px] rounded-full
-                    shadow
-                  "
-                >
-                  {cart.length}
-                </span>
-              )}
-            </button>
-
-            {/* TOTAL HARGA */}
-            <div className="font-bold text-amber-800 text-base">
-              Rp {total.toLocaleString()}
+        {/* 🔥 MOBILE BOTTOM BAR — selalu tampil, tapi tombol disabled jika cart kosong */}
+        <div
+          className="
+            bg-white
+            fixed bottom-0 left-0 right-0
+            px-4 py-2 flex items-center justify-between
+            shadow-[0_-4px_12px_rgba(0,0,0,0.15)]
+          "
+        >
+          {/* ICON BUBBLE ORANGE */}
+          <button onClick={() => setOpenMobile(true)} className="relative">
+            <div
+              className="
+          w-10 h-10 rounded-full
+          bg-amber-600 flex items-center justify-center
+          shadow-md
+        "
+            >
+              <ShoppingCart size={20} className="text-white" />
             </div>
 
-            {/* TOMBOL BAYAR */}
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitDisabled}
-              className="
-                bg-amber-600 text-white px-4 py-2 rounded-lg text-sm
-                font-semibold shadow
-                disabled:bg-gray-300 disabled:cursor-not-allowed
-                hover:bg-amber-700 transition
-              "
-            >
-              Bayar Sekarang
-            </button>
+            {/* BADGE KECIL — tampilkan hanya kalau ada item */}
+            {cart.length > 0 && (
+              <span
+                className="
+            absolute -top-1 -right-1
+            bg-amber-600 text-white
+            text-[10px] font-semibold
+            px-1.5 py-[1px] rounded-full
+            shadow
+          "
+              >
+                {cart.length}
+              </span>
+            )}
+          </button>
+
+          {/* TOTAL HARGA — tetap tampil (Rp 0 saat kosong) */}
+          <div className="font-bold text-amber-800 text-base">
+            Rp {Number(total || 0).toLocaleString()}
           </div>
-        )}
+
+          {/* TOMBOL BAYAR — disabled jika keranjang kosong */}
+          <button
+            onClick={handleSubmit}
+            disabled={isSubmitDisabled || cart.length === 0}
+            className={`
+        bg-amber-600 text-white px-4 py-2 rounded-lg text-sm
+        font-semibold shadow
+        disabled:bg-gray-300 disabled:cursor-not-allowed
+        hover:bg-amber-700 transition
+      `}
+          >
+            Bayar Sekarang
+          </button>
+        </div>
+
+        {/* spacer supaya list tidak tertutup */}
+        <div className="h-16" />
 
         {/* MOBILE CART MODAL */}
         {openMobile && (
           <div className="fixed inset-0 bg-black/50 z-50">
             <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-xl flex flex-col">
               {/* Header */}
-              <div className="p-4 border-b flex items-center justify-between">
+              <div className="p-4 flex items-center justify-between shadow-sm">
                 <h2 className="text-lg font-semibold text-amber-800">
                   Keranjang
                 </h2>
@@ -186,24 +284,17 @@ export default function Cart({
                   value={tableNumber}
                   onChange={(e) => setTableNumber(e.target.value)}
                   disabled={orderType !== "dine-in"}
-                  className={`
-                    w-24 px-2 py-1 rounded-lg border text-sm
-                    ${
-                      orderType === "dine-in"
-                        ? "border-amber-300 focus:border-amber-500"
-                        : "bg-gray-100 border-gray-200 cursor-not-allowed"
-                    }
-                  `}
+                  className={`w-24 px-2 py-1 rounded-lg border text-sm ${
+                    orderType === "dine-in"
+                      ? "border-amber-300 focus:border-amber-500"
+                      : "bg-gray-100 border-gray-200 cursor-not-allowed"
+                  }`}
                 />
 
                 <select
                   value={orderType}
                   onChange={(e) => setOrderType(e.target.value)}
-                  className="
-                    flex-1 px-2 py-1 rounded-lg border border-amber-300 
-                    focus:outline-none focus:border-amber-500
-                    text-sm bg-white
-                  "
+                  className="flex-1 px-2 py-1 rounded-lg border border-amber-300 focus:outline-none focus:border-amber-500 text-sm bg-white"
                 >
                   <option value="dine-in">Dine-In</option>
                   <option value="takeaway">Takeaway</option>
@@ -221,6 +312,7 @@ export default function Cart({
                       onAdd={() => onAdd(item._id)}
                       onMinus={() => onMinus(item._id)}
                       onRemove={() => onRemove(item._id)}
+                      onOpenDetails={openDetails} // pass function
                     />
                   ))
                 ) : (
@@ -234,9 +326,80 @@ export default function Cart({
               <div className="sticky bottom-0 bg-white p-2 shadow-lg">
                 <CartSummary
                   total={total}
-                  disabled={isSubmitDisabled}
+                  disabled={isSubmitDisabled || cart.length === 0}
                   onSubmit={handleSubmit}
                 />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MOBILE selectedItem modal: full-screen overlay so user can edit notes comfortably */}
+        {selectedItem && (
+          <div
+            className="md:hidden fixed inset-0 z-60 flex items-center justify-center"
+            aria-modal="true"
+            role="dialog"
+          >
+            <div
+              className="absolute inset-0 bg-black/40"
+              onClick={closeDetails}
+            />
+            <div className="relative bg-white max-w-md w-full rounded-lg shadow-xl p-4 z-10 mx-4">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <h3 className="text-lg font-semibold text-amber-800">
+                    {selectedItem.name}
+                  </h3>
+                  {selectedItem.shortDescription && (
+                    <p className="text-sm text-gray-600 mt-1">
+                      {selectedItem.shortDescription}
+                    </p>
+                  )}
+                </div>
+
+                <button
+                  className="text-gray-500 hover:text-gray-700"
+                  onClick={closeDetails}
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {selectedItem.image && (
+                <img
+                  src={selectedItem.image}
+                  alt={selectedItem.name}
+                  className="w-full h-40 object-cover rounded-md mt-3"
+                />
+              )}
+
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Catatan untuk item (opsional)
+                </label>
+                <textarea
+                  value={notesInput}
+                  onChange={(e) => setNotesInput(e.target.value)}
+                  placeholder="Contoh: tanpa bawang, pedas level 2, dsb."
+                  className="mt-2 w-full min-h-[80px] px-3 py-2 border rounded-md resize-y"
+                />
+              </div>
+
+              <div className="mt-4 flex justify-end gap-2">
+                <button
+                  className="px-3 py-2 rounded-md bg-gray-100"
+                  onClick={closeDetails}
+                >
+                  Batal
+                </button>
+                <button
+                  className="px-3 py-2 rounded-md bg-amber-600 text-white"
+                  onClick={saveNotes}
+                >
+                  Simpan
+                </button>
               </div>
             </div>
           </div>
