@@ -6,8 +6,29 @@ import CategoryTabs from "../../components/staff/cashier/CategoryTabs";
 import ProductList from "../../components/staff/cashier/ProductList";
 import Cart from "../../components/staff/cashier/Cart";
 import PaymentMethodModal from "../../components/staff/cashier/PaymentMethodModal";
+import ReceiptModal from "../../components/staff/cashier/ReceiptModal";
 
-import { createOrder } from "../../services/staff/orderService";
+import { createOrder, getOrderById } from "../../services/staff/orderService";
+
+// Backend mapping (move outside component so they're stable references)
+const ORDER_TYPE_MAP = {
+  "dine-in": "Dine-In",
+  dinein: "Dine-In",
+  takeaway: "Takeaway",
+  delivery: "Delivery",
+};
+
+const ALLOWED_PAYMENT_ENUM = ["cash", "qris", "edc", "transfer"];
+
+const PAYMENT_METHOD_MAP = {
+  cash: "cash",
+  qris: "qris",
+  debit: "edc",
+  credit: "edc",
+  card: "edc",
+  edc: "edc",
+  transfer: "transfer",
+};
 
 export default function CashierDashboard() {
   const {
@@ -31,68 +52,34 @@ export default function CashierDashboard() {
   } = useCart();
 
   const [submitting, setSubmitting] = useState(false);
-
-  // Payment modal state
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [receiptOpen, setReceiptOpen] = useState(false);
+  const [receiptOrder, setReceiptOrder] = useState(null);
 
-  // Keep last orderType & tableNumber (set by Cart when requestPayment called)
-  const [orderTypeState, setOrderTypeState] = useState(""); // e.g. "dine-in", "takeaway"
+  // Saved states from Cart
+  const [orderTypeState, setOrderTypeState] = useState("");
   const [tableNumberState, setTableNumberState] = useState("");
+
+  // 🔥 NEW: save customer name
+  const [customerNameState, setCustomerNameState] = useState("");
 
   useEffect(() => {
     if (!activeCategory) setActiveCategory("all");
   }, [categories, activeCategory, setActiveCategory]);
 
-  // Guarded add
   const handleSelectProduct = useCallback(
     (product) => {
       if (!product) return;
-      const stockNum = Number(product.stock ?? 0);
-      if (stockNum <= 0) return;
+      const stock = Number(product.stock ?? 0);
+      if (stock <= 0) return;
       addToCart(product);
     },
     [addToCart]
   );
 
-  // --- Mapping helpers ---
-
-  // Map frontend orderType (lowercase) to backend enum
-  const ORDER_TYPE_MAP = {
-    "dine-in": "Dine-In",
-    dinein: "Dine-In",
-    dine_in: "Dine-In",
-    takeaway: "Takeaway",
-    delivery: "Delivery",
-    "take-away": "Takeaway",
-  };
-
-  // Allowed backend payment enums
-  const ALLOWED_PAYMENT_ENUM = ["cash", "qris", "edc"];
-
-  // Map UI payment keys to backend enum values (adjust here if backend enum changes)
-  const PAYMENT_METHOD_MAP = {
-    cash: "cash",
-    qris: "qris",
-    // map various card labels to backend's 'edc' (EDC = card terminal)
-    debit: "edc",
-    credit: "edc",
-    card: "edc",
-    edc: "edc",
-    // transfer is not in allowed enum — don't auto-map it; we'll show an error
-    transfer: null,
-    bank: null,
-    bank_transfer: null,
-  };
-
   /**
-   * requestPayment(opts)
-   * opts expected from Cart (desktop/mobile): { tableNumber: string, orderType: string }
-   *
-   * Rules:
-   * - Determine effectiveOrderType: opts.orderType (if provided) else current orderTypeState
-   * - Determine effectiveTable: opts.tableNumber (if provided) else current tableNumberState
-   * - If effectiveOrderType === "dine-in" then effectiveTable is required -> abort + alert
-   * - Otherwise save effective values into state and open modal
+   * requestPayment
+   * menerima tableNumber, orderType, customerName dari Cart
    */
   const requestPayment = useCallback(
     (opts = {}) => {
@@ -101,43 +88,52 @@ export default function CashierDashboard() {
         return;
       }
 
-      const incomingOrderTypeRaw =
-        typeof opts.orderType === "string"
-          ? opts.orderType.toString().trim().toLowerCase()
-          : orderTypeState;
-
-      const incomingTableRaw =
-        typeof opts.tableNumber === "string"
-          ? opts.tableNumber.toString().trim()
-          : tableNumberState;
-
-      const effectiveOrderType = (incomingOrderTypeRaw || "")
+      const incomingOrderType = (opts.orderType || orderTypeState || "")
         .toString()
         .trim()
         .toLowerCase();
-      const effectiveTable = (incomingTableRaw || "").toString().trim();
 
-      // require tableNumber for dine-in
-      if (effectiveOrderType === "dine-in" && !effectiveTable) {
+      const incomingTable = (opts.tableNumber || tableNumberState || "")
+        .toString()
+        .trim();
+
+      // 🔥 NEW
+      const incomingCustomerName = (
+        opts.customerName ||
+        customerNameState ||
+        ""
+      )
+        .toString()
+        .trim();
+
+      // Dine-In but table number missing
+      if (incomingOrderType === "dine-in" && !incomingTable) {
         window.alert("Nomor meja harus diisi untuk Dine-In.");
         return;
       }
 
-      // Save effective values into local state (so create uses them)
-      if (effectiveOrderType) setOrderTypeState(effectiveOrderType);
-      if (effectiveTable) setTableNumberState(effectiveTable);
+      // Takeaway / Delivery must have customerName
+      if (
+        (incomingOrderType === "takeaway" ||
+          incomingOrderType === "delivery") &&
+        !incomingCustomerName
+      ) {
+        window.alert("Nama customer wajib untuk Takeaway & Delivery.");
+        return;
+      }
+
+      setOrderTypeState(incomingOrderType);
+      setTableNumberState(incomingTable);
+      setCustomerNameState(incomingCustomerName);
 
       setPaymentModalOpen(true);
     },
-    [items, orderTypeState, tableNumberState]
+    [items, orderTypeState, tableNumberState, customerNameState]
   );
 
   /**
-   * handleCreateOrderWithMethod(method)
-   * - Maps payment method to backend enum and validates it is allowed
-   * - Maps orderType to backend enum string ("Dine-In", "Takeaway", "Delivery")
-   * - Sends payload:
-   *     { items: [{product,quantity}], paymentMethod: <mapped>, orderType: <mapped?>, tableNumber? }
+   * handleCreateOrderWithMethod
+   * mengirim customerName ke backend
    */
   const handleCreateOrderWithMethod = useCallback(
     async (method) => {
@@ -146,28 +142,29 @@ export default function CashierDashboard() {
         return;
       }
 
-      // Map order type for backend
       const mappedOrderType = ORDER_TYPE_MAP[orderTypeState] || "";
+      const mappedPaymentMethod = PAYMENT_METHOD_MAP[method];
 
-      // If backend requires tableNumber for Dine-In (it does), guard here
+      if (
+        !mappedPaymentMethod ||
+        !ALLOWED_PAYMENT_ENUM.includes(mappedPaymentMethod)
+      ) {
+        window.alert("Metode pembayaran tidak valid.");
+        return;
+      }
+
+      // Validasi dine-in
       if (mappedOrderType === "Dine-In" && !tableNumberState) {
         window.alert("Nomor meja tidak ditemukan — proses dibatalkan.");
         return;
       }
 
-      // Map payment method to backend enum
-      const mappedPaymentMethod = PAYMENT_METHOD_MAP[method];
-
-      // If mapping returns null/undefined or not in allowed enum -> reject
+      // Validasi takeaway / delivery
       if (
-        !mappedPaymentMethod ||
-        !ALLOWED_PAYMENT_ENUM.includes(mappedPaymentMethod)
+        (mappedOrderType === "Takeaway" || mappedOrderType === "Delivery") &&
+        !customerNameState
       ) {
-        window.alert(
-          `Metode pembayaran "${method}" tidak didukung. Gunakan salah satu: ${ALLOWED_PAYMENT_ENUM.join(
-            ", "
-          )}.`
-        );
+        window.alert("Nama customer wajib diisi.");
         return;
       }
 
@@ -178,50 +175,89 @@ export default function CashierDashboard() {
         const apiItems = items.map((it) => ({
           product: it._id,
           quantity: it.qty,
+          note: (it.note ?? it.notes ?? "") || "",
         }));
 
         const payload = {
           items: apiItems,
           paymentMethod: mappedPaymentMethod,
-          // include orderType (backend expects enum like "Dine-In") — optional but helpful
-          ...(mappedOrderType ? { orderType: mappedOrderType } : {}),
-          // include tableNumber only when dine-in
+          orderType: mappedOrderType,
           ...(mappedOrderType === "Dine-In" && tableNumberState
             ? { tableNumber: tableNumberState }
+            : {}),
+          ...(mappedOrderType !== "Dine-In" && customerNameState
+            ? { customerName: customerNameState }
             : {}),
         };
 
         const res = await createOrder(payload);
-
-        // normalize response
         const data = res?.data ?? res;
-        const success =
-          data?.success ?? (res && (res.status === 201 || res.status === 200));
+        const success = data?.success ?? res?.status === 201;
 
         if (success) {
+          // attempt to extract created order object from server response
+          let created =
+            data?.data ?? data?.order ?? data?.createdOrder ?? data ?? null;
+
+          // try to fetch populated order by id if possible (ensure prices/product names)
+          try {
+            const idForFetch =
+              created?._id ?? created?.id ?? created?.orderId ?? null;
+            if (idForFetch) {
+              const fullRes = await getOrderById(idForFetch);
+              // extract inner payload: support { data: { ... } } and { data: { data: {...} } }
+              const full = fullRes?.data?.data ?? fullRes?.data ?? fullRes;
+              if (full) created = full;
+            }
+          } catch (err) {
+            console.warn("Failed to fetch populated order for receipt:", err);
+          }
+
+          // ensure payment method/status fallback from what we just sent
+          if (created) {
+            created = created || {};
+            created.paymentDetails = created.paymentDetails || {};
+            created.payment = created.payment || {};
+            if (!created.paymentDetails.method && mappedPaymentMethod) {
+              created.paymentDetails.method = mappedPaymentMethod;
+            }
+            if (!created.payment.status) {
+              created.payment.status = "paid";
+            }
+
+            setReceiptOrder(created);
+            setReceiptOpen(true);
+          }
+
           await refreshProducts();
           clearCart();
-          // reset saved meta
           setOrderTypeState("");
           setTableNumberState("");
+          setCustomerNameState("");
+
           window.alert("Transaksi berhasil disimpan.");
         } else {
-          const msg = data?.message || "Gagal menyimpan transaksi";
-          window.alert(msg);
+          window.alert(data?.message || "Gagal menyimpan transaksi");
         }
       } catch (err) {
-        console.error("Error creating order:", err);
-        const errMsg =
+        console.error("Order error:", err);
+        const msg =
           err?.response?.data?.message ||
-          (err?.response?.data && JSON.stringify(err.response.data)) ||
           err?.message ||
           "Terjadi kesalahan saat menyimpan transaksi.";
-        window.alert(errMsg);
+        window.alert(msg);
       } finally {
         setSubmitting(false);
       }
     },
-    [items, orderTypeState, tableNumberState, refreshProducts, clearCart]
+    [
+      items,
+      orderTypeState,
+      tableNumberState,
+      customerNameState,
+      refreshProducts,
+      clearCart,
+    ]
   );
 
   if (loading) {
@@ -235,15 +271,15 @@ export default function CashierDashboard() {
   return (
     <div
       className="
-      m-0
-      grid 
-      grid-cols-1
-      md:grid-cols-[2fr_1fr] 
-      h-full 
-      bg-gray-50 
-      overflow-hidden
-      rounded-lg
-    "
+        m-0
+        grid 
+        grid-cols-1
+        md:grid-cols-[2fr_1fr] 
+        h-full 
+        bg-gray-50 
+        overflow-hidden
+        rounded-lg
+      "
     >
       {/* LEFT */}
       <div className="p-4 bg-white flex flex-col h-full overflow-hidden">
@@ -274,21 +310,21 @@ export default function CashierDashboard() {
         )}
       </div>
 
-      {/* RIGHT — hanya tampil mulai md */}
+      {/* RIGHT */}
       <div className="hidden md:flex bg-white shadow-sm h-screen flex-col">
         <Cart
           cart={items}
           onAdd={increaseQty}
           onMinus={decreaseQty}
           onRemove={removeItem}
-          onSubmit={requestPayment} // Cart will pass {tableNumber, orderType}
+          onSubmit={requestPayment}
           total={total}
           submitting={submitting}
-          onUpdateNotes={updateItemNotes} // <--- gunakan nama prop yang Cart harapkan
+          onUpdateNotes={updateItemNotes}
         />
       </div>
 
-      {/* MOBILE CART — tampil di mobile */}
+      {/* MOBILE */}
       <div className="md:hidden">
         <Cart
           cart={items}
@@ -298,15 +334,22 @@ export default function CashierDashboard() {
           onSubmit={requestPayment}
           total={total}
           submitting={submitting}
-          onUpdateNotes={updateItemNotes} // kirim juga ke mobile
+          onUpdateNotes={updateItemNotes}
         />
       </div>
 
-      {/* Payment method modal */}
       <PaymentMethodModal
         open={paymentModalOpen}
         onClose={() => setPaymentModalOpen(false)}
         onChoose={handleCreateOrderWithMethod}
+      />
+      <ReceiptModal
+        open={receiptOpen}
+        onClose={() => {
+          setReceiptOpen(false);
+          setReceiptOrder(null);
+        }}
+        order={receiptOrder}
       />
     </div>
   );
