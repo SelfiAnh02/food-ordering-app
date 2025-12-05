@@ -1,6 +1,5 @@
 // src/hooks/staff/useOrders.jsx
-
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
   createOrder,
   getOrders,
@@ -9,85 +8,142 @@ import {
   getIncomingOrders,
 } from "../../services/staff/orderService";
 
+function extractData(res) {
+  // standarisasi response parsing
+  // support: res.data.data, res.data, res
+  if (!res) return null;
+  if (res.data && res.data.data !== undefined) return res.data.data;
+  if (res.data !== undefined) return res.data;
+  return res;
+}
+
 export default function useOrders() {
   const [orders, setOrders] = useState([]);
   const [incomingOrders, setIncomingOrders] = useState([]);
   const [orderDetail, setOrderDetail] = useState(null);
 
-  const [loading, setLoading] = useState(false);
+  // specific loading states
+  const [loading, setLoading] = useState(false); // for list loads
+  const [loadingDetail, setLoadingDetail] = useState(false);
+  const [saving, setSaving] = useState(false); // for create/update
   const [error, setError] = useState(null);
+
+  // ref untuk aborting & mounted check
+  const detailAbortRef = useRef(null);
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      // abort any pending detail request
+      if (detailAbortRef.current) {
+        try {
+          detailAbortRef.current.abort();
+        } catch (err) {
+          console.error("Error aborting detail request on unmount:", err);
+        }
+      }
+    };
+  }, []);
 
   // 🔄 Load all orders
   const loadOrders = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-
-      const result = await getOrders();
-      setOrders(result || []);
+      const res = await getOrders();
+      const data = extractData(res) || [];
+      if (mountedRef.current) setOrders(data);
+      return data;
     } catch (err) {
       console.error("Error loading orders:", err);
-      setError(err);
+      if (mountedRef.current) setError(normalizeError(err));
+      throw err;
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
     }
   }, []);
 
   // 🔄 Load only incoming (pending) orders
   const loadIncomingOrders = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-
-      const result = await getIncomingOrders();
-      setIncomingOrders(result || []);
+      const res = await getIncomingOrders();
+      const data = extractData(res) || [];
+      if (mountedRef.current) setIncomingOrders(data);
+      return data;
     } catch (err) {
       console.error("Error loading incoming orders:", err);
-      setError(err);
+      if (mountedRef.current) setError(normalizeError(err));
+      throw err;
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
     }
   }, []);
 
-  // 🔍 Load detail per order
+  // 🔍 Load detail per order (with abort support)
   const loadOrderDetail = useCallback(async (id) => {
-    if (!id) return;
+    if (!id) return null;
 
+    // abort previous detail request if any
+    if (detailAbortRef.current) {
+      try {
+        detailAbortRef.current.abort();
+      } catch (err) {
+        console.error("Error aborting previous detail request:", err);
+      }
+    }
+
+    // create new abort controller if service supports it
+    const ac =
+      typeof AbortController !== "undefined" ? new AbortController() : null;
+    detailAbortRef.current = ac;
+
+    setLoadingDetail(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-
-      const res = await getOrderById(id);
-      const detail = res?.data?.data || res?.data || res;
-      setOrderDetail(detail);
+      // If your service accepts signal: ac.signal, pass it. Otherwise ignore.
+      const res = await getOrderById(
+        id,
+        ac ? { signal: ac.signal } : undefined
+      );
+      const detail = extractData(res);
+      if (mountedRef.current) setOrderDetail(detail);
+      return detail;
     } catch (err) {
+      // ignore abort error if aborted
+      if (err?.name === "AbortError") {
+        console.info("Order detail request aborted");
+        return null;
+      }
       console.error("Error loading order detail:", err);
-      setError(err);
+      if (mountedRef.current) setError(normalizeError(err));
+      throw err;
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoadingDetail(false);
+      detailAbortRef.current = null;
     }
   }, []);
-
-  // ✏ Update status (example: completed / cancelled / preparing)
+  // ⚙️ Update order status
   const updateStatus = useCallback(
-    async (id, payload) => {
+    async (id, newStatusOrPayload) => {
+      setSaving(true);
+      setError(null);
       try {
-        setLoading(true);
-        setError(null);
+        const payload =
+          typeof newStatusOrPayload === "string"
+            ? { status: newStatusOrPayload }
+            : newStatusOrPayload;
 
-        const res = await updateOrderStatus(id, payload);
-
-        // Optional, refresh orders list
-        await loadOrders();
-        await loadIncomingOrders();
-
+        const res = await updateOrderStatus(id, payload); // service yang kita update di Opsi A
+        await Promise.all([loadOrders(), loadIncomingOrders()]);
         return res;
       } catch (err) {
-        console.error("Error updating order status:", err);
-        setError(err);
+        setError(normalizeError(err));
         throw err;
       } finally {
-        setLoading(false);
+        setSaving(false);
       }
     },
     [loadOrders, loadIncomingOrders]
@@ -96,33 +152,46 @@ export default function useOrders() {
   // ➕ Create Order (kasir)
   const createNewOrder = useCallback(
     async (payload) => {
+      setSaving(true);
+      setError(null);
       try {
-        setLoading(true);
-        setError(null);
-
         const res = await createOrder(payload);
 
-        // refresh after creating
-        await loadOrders();
-        await loadIncomingOrders();
+        // refresh lists in parallel
+        await Promise.all([loadOrders(), loadIncomingOrders()]);
 
         return res;
       } catch (err) {
         console.error("Error creating order:", err);
-        setError(err);
+        setError(normalizeError(err));
         throw err;
       } finally {
-        setLoading(false);
+        setSaving(false);
       }
     },
     [loadOrders, loadIncomingOrders]
   );
 
-  // 🔁 Manual refresh for tables or pages
+  // 🔁 Manual refresh for tables or pages (parallel)
   const refresh = useCallback(async () => {
-    await loadOrders();
-    await loadIncomingOrders();
+    setError(null);
+    try {
+      await Promise.all([loadOrders(), loadIncomingOrders()]);
+    } catch (err) {
+      console.error("Error refreshing orders:", err);
+    }
   }, [loadOrders, loadIncomingOrders]);
+
+  // small helper to normalize error object
+  function normalizeError(err) {
+    if (!err) return { message: "Unknown error" };
+    if (err.response && err.response.data) {
+      return {
+        message: err.response.data.message || JSON.stringify(err.response.data),
+      };
+    }
+    return { message: err.message || String(err) };
+  }
 
   return {
     // state
@@ -130,6 +199,8 @@ export default function useOrders() {
     incomingOrders,
     orderDetail,
     loading,
+    loadingDetail,
+    saving,
     error,
 
     // functions

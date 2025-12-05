@@ -29,7 +29,7 @@ export default function PaymentMethodModal({ open, onClose, onChoose }) {
   const methods = [
     { key: "cash", label: "Cash / Tunai", icon: <Banknote size={26} /> },
     { key: "qris", label: "QRIS", icon: <QrCode size={26} /> },
-    { key: "debit", label: "Kartu Debit", icon: <CreditCard size={26} /> },
+    { key: "edc", label: "Kartu (EDC)", icon: <CreditCard size={26} /> },
     { key: "transfer", label: "Transfer Bank", icon: <Wallet size={26} /> },
   ];
 

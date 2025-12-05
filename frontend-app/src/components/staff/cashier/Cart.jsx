@@ -19,6 +19,7 @@ export default function Cart({
   // Default dine-in
   const [tableNumber, setTableNumber] = useState("");
   const [orderType, setOrderType] = useState("dine-in");
+  const [customerName, setCustomerName] = useState("");
   const [selectedItem, setSelectedItem] = useState(null);
   const [notesInput, setNotesInput] = useState("");
 
@@ -26,7 +27,9 @@ export default function Cart({
   const isSubmitDisabled =
     submitting ||
     !cart.length ||
-    (orderType === "dine-in" && tableNumber.trim() === "");
+    (orderType === "dine-in"
+      ? tableNumber.trim() === ""
+      : customerName.trim() === "");
 
   const handleSubmit = () => {
     if (isSubmitDisabled) return;
@@ -34,6 +37,7 @@ export default function Cart({
     onSubmit({
       tableNumber: orderType === "dine-in" ? tableNumber : null,
       orderType,
+      customerName: orderType === "dine-in" ? null : customerName,
     });
   };
 
@@ -72,18 +76,24 @@ export default function Cart({
 
             {/* Order Controls */}
             <div className="flex items-center gap-2">
-              <input
-                type="text"
-                placeholder="No Meja"
-                value={tableNumber}
-                onChange={(e) => setTableNumber(e.target.value)}
-                disabled={orderType !== "dine-in"}
-                className={`w-20 px-2 py-1 rounded-lg border text-sm ${
-                  orderType === "dine-in"
-                    ? "border-amber-300 focus:border-amber-500"
-                    : "bg-gray-100 border-gray-200 cursor-not-allowed"
-                }`}
-              />
+              {/* Show table input for dine-in, or customer name for takeaway/delivery */}
+              {orderType === "dine-in" ? (
+                <input
+                  type="text"
+                  placeholder="No Meja"
+                  value={tableNumber}
+                  onChange={(e) => setTableNumber(e.target.value)}
+                  className={`w-20 px-2 py-1 rounded-lg border text-sm border-amber-300 focus:border-amber-500`}
+                />
+              ) : (
+                <input
+                  type="text"
+                  placeholder="Nama Customer"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  className="w-28 md:w-30 max-w-[160px] px-2 py-1 rounded-lg border text-sm"
+                />
+              )}
 
               <select
                 value={orderType}
@@ -278,18 +288,24 @@ export default function Cart({
 
               {/* ORDER CONTROLS MOBILE */}
               <div className="p-4 flex gap-3">
-                <input
-                  type="text"
-                  placeholder="No Meja"
-                  value={tableNumber}
-                  onChange={(e) => setTableNumber(e.target.value)}
-                  disabled={orderType !== "dine-in"}
-                  className={`w-24 px-2 py-1 rounded-lg border text-sm ${
-                    orderType === "dine-in"
-                      ? "border-amber-300 focus:border-amber-500"
-                      : "bg-gray-100 border-gray-200 cursor-not-allowed"
-                  }`}
-                />
+                {/* MOBILE: show table or customer name */}
+                {orderType === "dine-in" ? (
+                  <input
+                    type="text"
+                    placeholder="No Meja"
+                    value={tableNumber}
+                    onChange={(e) => setTableNumber(e.target.value)}
+                    className={`w-24 px-2 py-1 rounded-lg border text-sm border-amber-300 focus:border-amber-500`}
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    placeholder="Nama Customer"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    className="flex-1 min-w-0 px-2 py-1 rounded-lg border text-sm"
+                  />
+                )}
 
                 <select
                   value={orderType}
