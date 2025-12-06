@@ -24,6 +24,9 @@ export default function App() {
       const res = await getMe();
       if (!res?.data?.success) {
         window.location.href = "/login";
+      } else {
+        // set page title for admin
+        document.title = "Sajane Admin Panel";
       }
     } catch (err) {
       console.error("Fetch admin me error:", err);
@@ -38,6 +41,9 @@ export default function App() {
       const res = await getMeStaff();
       if (!res?.data?.success) {
         window.location.href = "/staff/login";
+      } else {
+        // set page title for staff
+        document.title = "Sajane Cashier";
       }
     } catch (err) {
       console.error("Fetch staff me error:", err);
@@ -63,6 +69,8 @@ export default function App() {
       fetchStaffMe();
     } else {
       // Staff tidak perlu dicek di sini
+      // default title for public pages
+      document.title = "Sajane Tea & Coffee Bar";
       setLoading(false);
     }
   }, []);

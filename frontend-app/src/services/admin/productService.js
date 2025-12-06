@@ -25,6 +25,13 @@ export async function getProducts({
 
 export async function createProduct(payload) {
   // backend returns { success, message, data: product }
+  // Expect JSON payload (no multipart). If caller accidentally passes FormData, throw.
+  if (payload instanceof FormData) {
+    throw new Error(
+      "createProduct: FormData not supported. Send JSON with imageUrl instead."
+    );
+  }
+
   const res = await api.post("/admin/products/create", payload);
   return res.data;
 }
@@ -36,6 +43,13 @@ export async function getProductById(id) {
 
 export async function updateProduct(id, payload) {
   // Defensive: ensure we send categoryId (backend expects categoryId)
+  // Expect JSON payload (no multipart). If caller accidentally passes FormData, throw.
+  if (payload instanceof FormData) {
+    throw new Error(
+      "updateProduct: FormData not supported. Send JSON with imageUrl instead."
+    );
+  }
+
   const body = { ...payload };
   if (payload.category && !payload.categoryId) {
     body.categoryId = payload.category;

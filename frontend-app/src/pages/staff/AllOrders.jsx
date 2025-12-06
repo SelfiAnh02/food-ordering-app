@@ -83,20 +83,20 @@ export default function AllOrders() {
   }
 
   return (
-    <div className="p-4">
-      <div className="flex flex-col md:flex-row md:items-center gap-3 mb-4">
+    <div className="p-2 rounded-lg bg-white h-full overflow-auto">
+      <div className="flex flex-col md:flex-row md:items-center gap-3 mb-4 ">
         <input
           placeholder="Search by id, customer, or product..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="flex-1 border rounded px-3 py-2 min-w-0"
+          className="flex-1 border rounded-xl px-3 py-2 min-w-0"
         />
 
         <div className="flex gap-2">
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="border rounded px-2 py-2"
+            className="border rounded-xl px-2 py-2"
           >
             <option value="">All Types</option>
             <option value="dine-in">Dine-In</option>
@@ -107,7 +107,7 @@ export default function AllOrders() {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="border rounded px-2 py-2"
+            className="border rounded-xl px-2 py-2"
           >
             <option value="">All Status</option>
             <option value="pending">Menunggu</option>
@@ -121,13 +121,12 @@ export default function AllOrders() {
               setFilterType("");
               setFilterStatus("");
             }}
-            className="px-3 py-2 border rounded"
+            className="px-3 py-2 border rounded-xl bg-amber-600 text-white hover:bg-amber-700"
           >
             Reset
           </button>
         </div>
       </div>
-
       {loading && (
         <div className="text-sm text-gray-500 mb-3">Loading orders...</div>
       )}
@@ -136,7 +135,6 @@ export default function AllOrders() {
           Error: {error?.message ?? "Failed"}
         </div>
       )}
-
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4">
         {filtered.length ? (
           filtered.map((o) => (
@@ -160,7 +158,6 @@ export default function AllOrders() {
           <div className="text-sm text-gray-500">No orders found</div>
         )}
       </div>
-
       <OrderDetailModal
         open={detailOpen}
         onClose={() => setDetailOpen(false)}

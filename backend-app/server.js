@@ -1,7 +1,7 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import connectDB from "./config/db.js";
-import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 
 // ==============================
@@ -20,21 +20,19 @@ import productRouterStaff from "./routes/staff/productRoutes.js"; // Product rou
 // ==============================
 // ⚙️ CONFIGURATION
 // ==============================
-dotenv.config();
 const app = express();
 
 // Middleware
-app.use(express.json());
-app.use(cookieParser());
 app.use(
   cors({
-  origin: "http://localhost:5173", // alamat frontend
-  credentials: true, // kalau pakai cookie/auth
+    origin: "http://localhost:5173",
+    credentials: true,
   })
 );
-// Naikkan limit JSON / urlencoded untuk terima base64
-app.use(express.json({ limit: "10mb" })); // contoh: 10MB
-app.use(express.urlencoded({ limit: "10mb", extended: true }));
+app.use(cookieParser());
+// Accept JSON/urlencoded with reasonable limit for base64 payloads (3MB)
+app.use(express.json({ limit: "3mb" }));
+app.use(express.urlencoded({ limit: "3mb", extended: true }));
 
 // Connect Database
 connectDB();
@@ -78,9 +76,7 @@ app.listen(PORT, () =>
   console.log(`✅ Server running on http://localhost:${PORT}`)
 );
 
-// Naikkan limit JSON / urlencoded untuk terima base64
-app.use(express.json({ limit: "10mb" })); // contoh: 10MB
-app.use(express.urlencoded({ limit: "10mb", extended: true }));
+// body parser already configured above
 
 // Export for testing or modular use
 export default app;

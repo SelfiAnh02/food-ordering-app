@@ -63,7 +63,8 @@ export const logoutStaff = (req, res) => {
   res.cookie("jwt", "", {
     httpOnly: true,
     expires: new Date(0), // hapus cookie
-    secure: process.env.NODE_ENV === "production", // jika production
+    path: "/api/staff",
+    secure: process.env.NODE_ENV !== "development",
     sameSite: "strict",
   });
   res.status(200).json({ success: true, message: "Logout berhasil" });
