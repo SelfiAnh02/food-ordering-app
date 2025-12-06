@@ -5,8 +5,51 @@ import { Menu, Search, UserRound } from "lucide-react";
  *  - onToggleSidebar
  *  - onLogout (optional) -> function provided by parent to handle logout
  */
-export default function Navbar({ onToggleSidebar, onLogout, pageTitle }) {
+import { useEffect, useRef, useState } from "react";
+
+export default function Navbar({
+  onToggleSidebar,
+  onLogout,
+  pageTitle,
+  currentPanel,
+}) {
   const brandText = "text-[#7a4528]"; // coklat
+
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
+
+  // try to detect whether user is in staff or admin panel from pageTitle
+  const title = (pageTitle || "").toString().toLowerCase();
+  // Prefer explicit `currentPanel` prop if provided; fallback to title heuristics
+  const panel = currentPanel
+    ? String(currentPanel).toLowerCase()
+    : /staff|cashier|kasir|orders - staff/.test(title)
+    ? "staff"
+    : "admin";
+  const isStaff = panel === "staff";
+
+  useEffect(() => {
+    function onDocClick(e) {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    }
+    document.addEventListener("click", onDocClick);
+    return () => document.removeEventListener("click", onDocClick);
+  }, []);
+
+  function handleSwitch() {
+    setProfileOpen(false);
+    // redirect to the appropriate login page
+    const origin = window.location?.origin || "";
+    if (isStaff) {
+      // currently in staff panel -> go to admin login page (app's admin login path is `/login`)
+      window.location.href = `${origin}/login`;
+    } else {
+      // currently in admin (or unknown) -> go to staff login page
+      window.location.href = `${origin}/staff/login`;
+    }
+  }
 
   return (
     // header styling only; position handled by layout
@@ -32,35 +75,40 @@ export default function Navbar({ onToggleSidebar, onLogout, pageTitle }) {
       </div>
       {/* right: search, logout, profile icon */}
       <div className="flex items-center gap-3">
-        {/* search (hidden on xs) */}
-        <div className="hidden sm:flex items-center border rounded-full px-3 py-1 text-sm text-gray-600 bg-[#ffffff] border-[#FF8A00]">
-          <Search size={18} className="text-[#FF8A00] opacity-80" />
-          <input
-            className="bg-transparent outline-none w-23 sm:w-40 md:w-46 text-sm placeholder-gray-400 ml-2"
-            placeholder="Search..."
-            aria-label="Search"
-          />
-        </div>
-
         {/* logout (hidden on xs) */}
         <button
           onClick={onLogout}
-          className="hidden sm:inline-block text-sm px-3 py-1 rounded-md border border-[#FF8A00] hover:bg-amber-50 text-[#FF8A00] font-medium"
+          className="hidden sm:inline-block text-sm px-3 py-1 rounded-md border border-amber-600 hover:bg-amber-50 text-amber-600 font-medium"
           title="Logout"
         >
           Logout
         </button>
 
-        {/* profile icon only */}
-        <button
-          onClick={() => {
-            /* optional dropdown */
-          }}
-          className="p-2 rounded-full bg-amber-600 text-white hover:bg-amber-700 transition-colors"
-          title="Profile"
-        >
-          <UserRound size={18} />
-        </button>
+        {/* profile icon with dropdown */}
+        <div className="relative" ref={profileRef}>
+          <button
+            onClick={() => setProfileOpen((s) => !s)}
+            className="p-2 rounded-full bg-amber-600 text-white hover:bg-amber-700 transition-colors"
+            title="Profile"
+            aria-expanded={profileOpen}
+            aria-haspopup="true"
+          >
+            <UserRound size={18} />
+          </button>
+
+          {profileOpen && (
+            <div className="absolute right-0 mt-2 w-35">
+              <div className="p-2">
+                <button
+                  onClick={handleSwitch}
+                  className="w-full text-left px-3 py-1 border rounded-md hover:bg-amber-700 bg-amber-600 text-white text-sm font-medium"
+                >
+                  {isStaff ? "Switch to Admin" : "Switch to Staff"}
+                </button> 
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* small logout icon for xs */}
         <button

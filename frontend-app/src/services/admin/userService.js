@@ -1,28 +1,11 @@
 // frontend-app/src/services/userService.js
-import api from '../../api/axios'; 
+import api from "../../api/axios";
 
+export const fetchAllUsers = () =>
+  api.get("/admin/users/all-users").then((res) => res.data);
 
-export const fetchAllUsers = async () => {
-    try {
-        const response = await api.get("/admin/users/all-users");
-        return response.data;
-    } catch (err) {
-        throw err.response.data;
-    }
-};
-export const createStaff = async (payload) => {
-    try {
-        const response = await api.post("/admin/users/create-staff", payload);
-        return response.data;
-    } catch (err) {
-        throw err.response.data;
-    }
-};
-export const deleteStaff = async (id) => {
-    try {
-        const response = await api.delete(`/admin/users/delete-staff/${id}`);
-        return response.data;
-    } catch (err) {
-        throw err.response.data;
-    }
-};
+export const createStaff = (payload) =>
+  api.post("/admin/users/create-staff", payload).then((res) => res.data);
+
+export const deleteStaff = (id) =>
+  api.delete(`/admin/users/delete-staff/${id}`).then((res) => res.data);

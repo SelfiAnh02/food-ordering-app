@@ -2,7 +2,13 @@
 import { useEffect, useState } from "react";
 import { parseDigits, formatNumberToLocale } from "../../../utils/productUtils";
 
-export default function ProductForm({ initial = {}, categories = [], onCancel, onSubmit }) {
+export default function ProductForm({
+  initial = {},
+  categories = [],
+  onCancel,
+  onSubmit,
+}) {
+  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     name: initial.name ?? "",
     description: initial.description ?? "",
@@ -14,9 +20,12 @@ export default function ProductForm({ initial = {}, categories = [], onCancel, o
       initial.categoryId ??
       initial.category ??
       initial.categoryName ??
-      (categories[0]?._id ?? categories[0]?.id ?? ""),
+      categories[0]?._id ??
+      categories[0]?.id ??
+      "",
     stock: initial.stock ?? 0,
     image: initial.image ?? "",
+    imageFile: null,
   });
 
   // ✅ Reset ulang form jika props berubah (edit/add)
@@ -31,9 +40,12 @@ export default function ProductForm({ initial = {}, categories = [], onCancel, o
         initial.categoryId ??
         initial.category ??
         initial.categoryName ??
-        (categories[0]?._id ?? categories[0]?.id ?? ""),
+        categories[0]?._id ??
+        categories[0]?.id ??
+        "",
       stock: initial.stock ?? 0,
       image: initial.image ?? "",
+      imageFile: null,
     });
   }, [initial, categories]);
 
@@ -53,28 +65,56 @@ export default function ProductForm({ initial = {}, categories = [], onCancel, o
     if (!f) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
-      change("image", ev.target.result);
+      setForm((s) => ({ ...s, image: ev.target.result, imageFile: f }));
     };
     reader.readAsDataURL(f);
   }
 
-  function handleSubmit(e) {
+  // Validate file size client-side (2 MB max)
+  function validateFileSize(file) {
+    const max = 2 * 1024 * 1024; // 2 MB
+    return file && file.size <= max;
+  }
+
+  async function handleSubmit(e) {
     e.preventDefault();
     if (!form.name.trim()) {
       alert("Name is required");
       return;
     }
 
+    // default: no image upload
+    let imageUrl = "";
+    let imageBase64 = null;
+
+    // if a new file was selected, `form.image` already contains data URL from FileReader
+    if (form.imageFile) {
+      if (!validateFileSize(form.imageFile)) {
+        alert("Image too large. Max 2 MB allowed.");
+        return;
+      }
+      imageBase64 = form.image; // data URL (e.g. data:image/jpeg;base64,...)
+    } else {
+      // if no new file but existing image is a URL, keep it
+      if (form.image && String(form.image).startsWith("http"))
+        imageUrl = form.image;
+    }
+
     const payload = {
       name: form.name.trim(),
       description: form.description,
       price: Number(form.priceNumber) || 0,
-      categoryId: form.categoryId || "", // ✅ kirim categoryId sesuai backend
+      categoryId: form.categoryId || "",
       stock: Number(form.stock) || 0,
-      image: form.image || "",
+      imageUrl,
+      imageBase64,
     };
-
-    onSubmit(payload);
+    try {
+      setSaving(true);
+      await onSubmit(payload);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -94,7 +134,9 @@ export default function ProductForm({ initial = {}, categories = [], onCancel, o
           <label className="block text-sm font-medium mb-1">Category</label>
           <select
             value={form.categoryId ?? ""}
-            onChange={(e) => setForm((s) => ({ ...s, categoryId: e.target.value }))}
+            onChange={(e) =>
+              setForm((s) => ({ ...s, categoryId: e.target.value }))
+            }
             className="w-full border rounded px-3 py-2"
             required
           >
@@ -172,8 +214,9 @@ export default function ProductForm({ initial = {}, categories = [], onCancel, o
         <button
           type="submit"
           className="px-3 py-2 rounded bg-[var(--brown-700)] text-white"
+          disabled={saving}
         >
-          Save
+          {saving ? "Saving..." : "Save"}
         </button>
       </div>
     </form>

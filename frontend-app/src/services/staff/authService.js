@@ -19,5 +19,6 @@ export const staffLogout = async () => {
 };
 
 export const getMe = async () => {
-  await api.get("/staff/me");
+  const res = await api.get("/staff/me");
+  return res;
 };

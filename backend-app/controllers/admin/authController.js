@@ -4,20 +4,24 @@ import userModel from "../../models/userModel.js";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../../utils/auth.js";
 
-// LOGIN ADMIN 
+// LOGIN ADMIN
 export const loginAdmin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await userModel.findOne({ email });
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     // cek password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ success: false, message: "Invalid credentials" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid credentials" });
     }
 
     // generate token dan set di cookie
@@ -42,7 +46,10 @@ export const loginAdmin = async (req, res) => {
 export const meAdmin = async (req, res) => {
   try {
     const user = await userModel.findById(req.user.id).select("-password");
-    if (!user) return res.status(401).json({ success: false, message: "User not found" });
+    if (!user)
+      return res
+        .status(401)
+        .json({ success: false, message: "User not found" });
     res.status(200).json({ success: true, user });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -55,7 +62,9 @@ export const logoutAdmin = (req, res) => {
   res.cookie("jwt", "", {
     httpOnly: true,
     expires: new Date(0), // hapus cookie
+    path: "/api/admin",
+    sameSite: "strict",
+    secure: process.env.NODE_ENV !== "development",
   });
   res.status(200).json({ success: true, message: "Logout berhasil" });
 };
-

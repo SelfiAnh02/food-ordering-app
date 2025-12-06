@@ -1,5 +1,5 @@
 // frontend-app/src/pages/Login.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import useStaffLogin from "../hooks/staff/useStaffLogin";
@@ -13,6 +13,15 @@ const Login = ({ mode = "admin" }) => {
 
   // staff hook
   const staffHook = useStaffLogin();
+
+  // set page title based on login mode
+  useEffect(() => {
+    document.title = mode === "staff" ? "Sajane Cashier" : "Sajane Admin Panel";
+    return () => {
+      // optional: reset to generic title when leaving
+      // do not overwrite titles set by authenticated pages
+    };
+  }, [mode]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
