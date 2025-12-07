@@ -55,6 +55,7 @@ export default function CashierDashboard() {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [receiptOrder, setReceiptOrder] = useState(null);
+  const [receiptSuccessMessage, setReceiptSuccessMessage] = useState(null);
 
   // Saved states from Cart
   const [orderTypeState, setOrderTypeState] = useState("");
@@ -226,6 +227,7 @@ export default function CashierDashboard() {
             }
 
             setReceiptOrder(created);
+            setReceiptSuccessMessage("Transaksi Berhasil");
             setReceiptOpen(true);
           }
 
@@ -235,7 +237,7 @@ export default function CashierDashboard() {
           setTableNumberState("");
           setCustomerNameState("");
 
-          window.alert("Transaksi berhasil disimpan.");
+          // transaction success is now shown inside the ReceiptModal
         } else {
           window.alert(data?.message || "Gagal menyimpan transaksi");
         }
@@ -348,8 +350,10 @@ export default function CashierDashboard() {
         onClose={() => {
           setReceiptOpen(false);
           setReceiptOrder(null);
+          setReceiptSuccessMessage(null);
         }}
         order={receiptOrder}
+        successMessage={receiptSuccessMessage}
       />
     </div>
   );

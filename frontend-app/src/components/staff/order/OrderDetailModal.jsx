@@ -146,11 +146,11 @@ export default function OrderDetailModal({
   }
 
   return (
-    <div className="fixed inset-0 z-60 flex items-start justify-center px-4 py-6">
+    <div className="fixed inset-0 z-60 flex items-start justify-center px-4 pt-6 pb-20 md:pb-6">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative z-50 w-full max-w-xl bg-white rounded-xl shadow-xl overflow-hidden">
+      <div className="relative z-50 w-full max-w-lg bg-white rounded-xl shadow-xl overflow-hidden flex flex-col max-h-[80vh]">
         {/* Header */}
-        <div className="flex items-start justify-between p-3 border-b">
+        <div className="flex-none flex items-start justify-between p-3 border-b">
           <div className="min-w-0">
             <h3 className="text-lg font-semibold text-amber-800 truncate">
               Order #{String(id).slice(-6)}
@@ -179,18 +179,22 @@ export default function OrderDetailModal({
                   : ""}
               </div>
             </div>
+            {/* (print button removed from body; use header print) */}
           </div>
 
           <button
             onClick={() => setShowReceipt(true)}
-            className="text-gray-500 ml-4"
-            title="Open receipt"
-            aria-label="Open receipt"
-          ></button>
+            className="ml-4 px-2 py-1 rounded bg-amber-600 text-white flex items-center gap-2 text-sm"
+            title="Print receipt"
+            aria-label="Print receipt"
+          >
+            <Printer size={16} />
+            <span className="hidden sm:inline">Print</span>
+          </button>
         </div>
 
         {/* Body */}
-        <div className="p-3 max-h-[70vh] overflow-y-auto space-y-2">
+        <div className="p-3 flex-1 overflow-auto space-y-1">
           {/* summary grid: show either Table (for dine-in) or Customer (for others). tighter spacing */}
           <div className="grid grid-cols-2 gap-2 text-sm text-gray-700">
             <div>
@@ -213,11 +217,11 @@ export default function OrderDetailModal({
             {loadingDetail ? (
               <div className="text-sm text-gray-500">Loading items...</div>
             ) : normalizedItems.length ? (
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {normalizedItems.map((it, idx) => (
                   <div
                     key={idx}
-                    className="py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1"
+                    className="py-1 flex items-center justify-between gap-1"
                   >
                     <div className="min-w-0">
                       <div className="font-medium truncate">{it.name}</div>
@@ -307,17 +311,17 @@ export default function OrderDetailModal({
         </div>
 
         {/* Footer actions (with total) */}
-        <div className="p-3 border-t flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 bg-white">
+        <div className="flex-none p-3 border-t flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 bg-white">
           <div className="flex-1 text-sm text-gray-700 font-semibold flex items-center">
             <div className="mr-3">Total:</div>
-            <div className="text-[#FF8A00] text-lg">
+            <div className="text-[#FF8A00]">
               {formatRp(used.totalPrice ?? computedTotal)}
             </div>
           </div>
           {status === "pending" && (
             <button
               onClick={() => onUpdateStatus?.(id, "confirmed")}
-              className="w-full sm:w-auto px-4 py-2 rounded-md bg-amber-600 text-white"
+              className="px-4 py-2 rounded-md bg-amber-600 text-white text-sm"
             >
               Siapkan Pesanan
             </button>
@@ -325,23 +329,16 @@ export default function OrderDetailModal({
           {status === "confirmed" && (
             <button
               onClick={() => onUpdateStatus?.(id, "delivered")}
-              className="w-full sm:w-auto px-4 py-2 rounded-md bg-green-600 text-white"
+              className="px-4 py-2 rounded-md bg-green-600 text-white text-sm"
             >
               Tandai Selesai
             </button>
           )}
-          {/* Print receipt button */}
-          <button
-            onClick={() => setShowReceipt(true)}
-            className="w-full sm:w-auto px-4 py-2 rounded-md bg-amber-600 text-white"
-          >
-            Print Struk
-          </button>
           <button
             onClick={onClose}
-            className="w-full sm:w-auto px-3 py-2 rounded-md border"
+            className="w-full sm:w-auto px-3 py-2 rounded-md border bg-amber-600 text-white text-sm "
           >
-            Tutup
+            Close
           </button>
         </div>
         {/* Receipt modal (opened from header button) */}

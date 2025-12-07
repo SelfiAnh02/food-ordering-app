@@ -1,12 +1,13 @@
 // src/components/admin/OrderStatsCard.jsx
-import { formatPrice } from "../../utils/orderUtils";
+import { formatPrice } from "../../../utils/orderUtils";
 
 export default function OrderStatsCard({ stats }) {
   const totalRevenue = stats?.totalRevenue ?? 0;
   const totalOrders = stats?.totalOrders ?? stats?.totalCompletedOrders ?? 0;
   const byStatus = stats?.byStatus ?? [];
-  const deliveredObj =
-    byStatus.find((b) => (b._id ?? b.status ?? "").toString() === "confirmed") || { count: 0 };
+  const deliveredObj = byStatus.find(
+    (b) => (b._id ?? b.status ?? "").toString() === "confirmed"
+  ) || { count: 0 };
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">

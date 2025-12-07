@@ -21,7 +21,7 @@ export default function ProductList({ products = [], onSelect }) {
             key={product._id}
             className="
               bg-white rounded-xl shadow-md 
-              border border-amber-200
+              border border-amber-400
               p-3
               flex flex-col
               hover:shadow-lg transition

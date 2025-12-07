@@ -1,10 +1,10 @@
 // src/pages/admin/OrdersPage.jsx
 import useOrderAdmin from "../../hooks/admin/useOrderAdmin.js";
-import OrderFilter from "../../components/admin/OrderFilter";
-import OrderStatsCard from "../../components/admin/OrderStatsCard";
-import OrderTopProducts from "../../components/admin/OrderTopProducts";
-import OrderTableAdmin from "../../components/admin/OrderTableAdmin";
-import OrderDetailModal from "../../components/admin/OrderDetailModal";
+import OrderFilter from "../../components/admin/order/OrderFilter.jsx";
+import OrderStatsCard from "../../components/admin/order/OrderStatsCard.jsx";
+import OrderTopProducts from "../../components/admin/order/OrderTopProducts.jsx";
+import OrderTableAdmin from "../../components/admin/order/OrderTableAdmin.jsx";
+import OrderDetailModal from "../../components/admin/order/OrderDetailModal.jsx";
 
 export default function OrdersPage() {
   const {
@@ -71,7 +71,9 @@ export default function OrdersPage() {
           {/* Right column: top products */}
           <div className="lg:col-span-1">
             {/* prefer hook-provided topProducts (hook computes fallback from orders) */}
-            <OrderTopProducts topProducts={topProducts ?? stats?.topProducts ?? []} />
+            <OrderTopProducts
+              topProducts={topProducts ?? stats?.topProducts ?? []}
+            />
           </div>
         </div>
 
