@@ -83,7 +83,7 @@ export default function Cart({
                   placeholder="No Meja"
                   value={tableNumber}
                   onChange={(e) => setTableNumber(e.target.value)}
-                  className={`w-20 px-2 py-1 rounded-lg border text-sm border-amber-300 focus:border-amber-500`}
+                  className={`w-20 px-2 py-1 rounded-lg border text-sm text-amber-800 border-amber-400 focus:border-amber-500`}
                 />
               ) : (
                 <input
@@ -91,14 +91,14 @@ export default function Cart({
                   placeholder="Nama Customer"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-28 md:w-30 max-w-[160px] px-2 py-1 rounded-lg border text-sm"
+                  className="w-28 md:w-30 max-w-[160px] px-2 py-1 rounded-lg border text-sm border-amber-400 text-amber-800"
                 />
               )}
 
               <select
                 value={orderType}
                 onChange={(e) => setOrderType(e.target.value)}
-                className="px-2 py-1 rounded-lg border border-amber-300 focus:outline-none focus:border-amber-500 text-sm bg-white"
+                className="px-2 py-1 rounded-lg border border-amber-400 focus:outline-none focus:border-amber-500 text-sm text-amber-800 bg-white"
               >
                 <option value="dine-in">Dine-In</option>
                 <option value="takeaway">Takeaway</option>
@@ -161,24 +161,7 @@ export default function Cart({
                     </p>
                   )}
                 </div>
-
-                <button
-                  className="text-gray-500 hover:text-gray-700"
-                  onClick={closeDetails}
-                  aria-label="Close"
-                >
-                  ✕
-                </button>
               </div>
-
-              {/* optional: gambar */}
-              {selectedItem.image && (
-                <img
-                  src={selectedItem.image}
-                  alt={selectedItem.name}
-                  className="w-full h-40 object-cover rounded-md mt-3"
-                />
-              )}
 
               {/* NOTES FORM */}
               <div className="mt-4">
@@ -219,7 +202,7 @@ export default function Cart({
           className="
             bg-white
             fixed bottom-0 left-0 right-0
-            px-4 py-2 flex items-center justify-between
+            p-3 flex items-center justify-between
             shadow-[0_-4px_12px_rgba(0,0,0,0.15)]
           "
         >
@@ -261,11 +244,11 @@ export default function Cart({
             onClick={handleSubmit}
             disabled={isSubmitDisabled || cart.length === 0}
             className={`
-        bg-amber-600 text-white px-4 py-2 rounded-lg text-sm
-        font-semibold shadow
-        disabled:bg-gray-300 disabled:cursor-not-allowed
-        hover:bg-amber-700 transition
-      `}
+              bg-amber-600 text-white px-4 py-2 rounded-lg text-sm
+              font-semibold shadow
+              disabled:bg-gray-300 disabled:cursor-not-allowed
+              hover:bg-amber-700 transition
+            `}
           >
             Bayar Sekarang
           </button>
@@ -279,11 +262,16 @@ export default function Cart({
           <div className="fixed inset-0 bg-black/50 z-50">
             <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-xl flex flex-col">
               {/* Header */}
-              <div className="p-4 flex items-center justify-between shadow-sm">
+              <div className="px-4 py-2 flex items-center justify-between shadow-sm">
                 <h2 className="text-lg font-semibold text-amber-800">
                   Keranjang
                 </h2>
-                <button onClick={() => setOpenMobile(false)}>X</button>
+                <button
+                  onClick={() => setOpenMobile(false)}
+                  className="sm:w-auto px-3 py-2 rounded-md border bg-amber-600 text-sm text-white"
+                >
+                  Close
+                </button>
               </div>
 
               {/* ORDER CONTROLS MOBILE */}
@@ -295,7 +283,7 @@ export default function Cart({
                     placeholder="No Meja"
                     value={tableNumber}
                     onChange={(e) => setTableNumber(e.target.value)}
-                    className={`w-24 px-2 py-1 rounded-lg border text-sm border-amber-300 focus:border-amber-500`}
+                    className={`w-24 px-2 py-1 rounded-lg border text-sm text-amber-800 border-amber-400 focus:border-amber-500`}
                   />
                 ) : (
                   <input
@@ -303,21 +291,20 @@ export default function Cart({
                     placeholder="Nama Customer"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
-                    className="flex-1 min-w-0 px-2 py-1 rounded-lg border text-sm"
+                    className="flex-1 min-w-0 px-2 py-1 rounded-lg border text-amber-800 border-amber-400 text-sm"
                   />
                 )}
 
                 <select
                   value={orderType}
                   onChange={(e) => setOrderType(e.target.value)}
-                  className="flex-1 px-2 py-1 rounded-lg border border-amber-300 focus:outline-none focus:border-amber-500 text-sm bg-white"
+                  className="flex-1 px-2 py-1 text-amber-800 rounded-lg border border-amber-400 focus:outline-none focus:border-amber-500 text-sm bg-white"
                 >
                   <option value="dine-in">Dine-In</option>
                   <option value="takeaway">Takeaway</option>
                   <option value="delivery">Delivery</option>
                 </select>
               </div>
-
               {/* LIST */}
               <div className="flex-1 overflow-y-auto px-4 space-y-3 pb-28">
                 {cart.length ? (
@@ -337,7 +324,6 @@ export default function Cart({
                   </div>
                 )}
               </div>
-
               {/* Summary Mobile */}
               <div className="sticky bottom-0 bg-white p-2 shadow-lg">
                 <CartSummary
@@ -361,7 +347,7 @@ export default function Cart({
               className="absolute inset-0 bg-black/40"
               onClick={closeDetails}
             />
-            <div className="relative bg-white max-w-md w-full rounded-lg shadow-xl p-4 z-10 mx-4">
+            <div className="relative bg-white rounded-lg shadow-xl p-4 z-10 mx-4 w-full max-w-md">
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <h3 className="text-lg font-semibold text-amber-800">
@@ -373,23 +359,7 @@ export default function Cart({
                     </p>
                   )}
                 </div>
-
-                <button
-                  className="text-gray-500 hover:text-gray-700"
-                  onClick={closeDetails}
-                  aria-label="Close"
-                >
-                  ✕
-                </button>
               </div>
-
-              {selectedItem.image && (
-                <img
-                  src={selectedItem.image}
-                  alt={selectedItem.name}
-                  className="w-full h-40 object-cover rounded-md mt-3"
-                />
-              )}
 
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700">

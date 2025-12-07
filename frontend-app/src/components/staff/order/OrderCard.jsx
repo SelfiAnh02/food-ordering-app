@@ -88,7 +88,7 @@ export default function OrderCard({
 
   return (
     <article
-      className={`bg-white border rounded-xl p-4 shadow-sm flex flex-col gap-3 h-full min-h-[160px] ${className}`}
+      className={`bg-white border border-amber-400 rounded-xl p-4 shadow-sm flex flex-col gap-3 h-full min-h-[160px] ${className}`}
     >
       {/* HEADER: id | type (left)  --- time (right) */}
       <div className="flex items-center justify-between gap-2">

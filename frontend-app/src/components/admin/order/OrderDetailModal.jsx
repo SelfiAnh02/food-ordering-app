@@ -1,5 +1,5 @@
 // src/components/admin/OrderDetailModal.jsx
-import { formatPrice, formatDateTime } from "../../utils/orderUtils";
+import { formatPrice, formatDateTime } from "../../../utils/orderUtils";
 
 export default function OrderDetailModal({ order, open, onClose }) {
   if (!open) return null;
@@ -11,7 +11,9 @@ export default function OrderDetailModal({ order, open, onClose }) {
       <div className="relative bg-white w-full max-w-3xl rounded-lg shadow-lg overflow-auto z-10">
         <div className="p-4 border-b flex items-center justify-between">
           <h3 className="text-lg font-semibold">Order Detail</h3>
-          <button onClick={onClose} className="text-gray-500">Close</button>
+          <button onClick={onClose} className="text-gray-500">
+            Close
+          </button>
         </div>
 
         <div className="p-4 space-y-4">
@@ -46,10 +48,16 @@ export default function OrderDetailModal({ order, open, onClose }) {
                 return (
                   <div key={idx} className="flex justify-between items-center">
                     <div>
-                      <div className="font-medium">{name} x{it.quantity}</div>
-                      {it.note && <div className="text-xs text-gray-500">{it.note}</div>}
+                      <div className="font-medium">
+                        {name} x{it.quantity}
+                      </div>
+                      {it.note && (
+                        <div className="text-xs text-gray-500">{it.note}</div>
+                      )}
                     </div>
-                    <div className="text-sm font-semibold">{formatPrice(price * it.quantity)}</div>
+                    <div className="text-sm font-semibold">
+                      {formatPrice(price * it.quantity)}
+                    </div>
                   </div>
                 );
               })}
@@ -58,7 +66,9 @@ export default function OrderDetailModal({ order, open, onClose }) {
 
           <div className="flex justify-between items-center border-t pt-3">
             <div className="text-sm text-gray-500">Total</div>
-            <div className="text-lg font-semibold">{formatPrice(order?.totalPrice)}</div>
+            <div className="text-lg font-semibold">
+              {formatPrice(order?.totalPrice)}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
@@ -69,17 +79,23 @@ export default function OrderDetailModal({ order, open, onClose }) {
 
             <div>
               <div className="text-sm text-gray-500">Payment Method</div>
-              <div className="font-medium">{order?.paymentDetails?.method ?? "-"}</div>
+              <div className="font-medium">
+                {order?.paymentDetails?.method ?? "-"}
+              </div>
             </div>
 
             <div>
               <div className="text-sm text-gray-500">Created At</div>
-              <div className="font-medium">{formatDateTime(order?.createdAt)}</div>
+              <div className="font-medium">
+                {formatDateTime(order?.createdAt)}
+              </div>
             </div>
 
             <div>
               <div className="text-sm text-gray-500">Paid At</div>
-              <div className="font-medium">{formatDateTime(order?.paymentDetails?.paidAt)}</div>
+              <div className="font-medium">
+                {formatDateTime(order?.paymentDetails?.paidAt)}
+              </div>
             </div>
           </div>
         </div>

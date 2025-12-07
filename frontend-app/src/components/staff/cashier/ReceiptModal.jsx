@@ -1,6 +1,6 @@
 import { Printer } from "lucide-react";
 
-export default function ReceiptModal({ open, onClose, order }) {
+export default function ReceiptModal({ open, onClose, order, successMessage }) {
   if (!open) return null;
 
   const used = order?.data ?? order ?? {};
@@ -42,7 +42,7 @@ export default function ReceiptModal({ open, onClose, order }) {
   }
 
   return (
-    <div className="fixed inset-0 z-60 flex items-start justify-center px-4 py-6">
+    <div className="fixed inset-0 z-60 flex items-center sm:items-start justify-center px-2 py-4">
       <style>{`
         @media print {
           body * { visibility: hidden; }
@@ -52,28 +52,28 @@ export default function ReceiptModal({ open, onClose, order }) {
       `}</style>
 
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative z-50 w-full max-w-md bg-white rounded-lg shadow-xl overflow-hidden">
-        <div className="flex items-center justify-between p-3 border-b">
-          <div>
-            <div className="text-sm text-gray-500">Sajane Tea & Coffee Bar</div>
-            <div className="text-lg font-semibold">
+      <div className="relative z-50 w-full max-w-full sm:max-w-md mx-0 sm:mx-0 bg-white rounded-lg shadow-xl overflow-hidden max-h-[90vh] flex flex-col">
+        {successMessage ? (
+          <div className="w-full bg-amber-600 text-white text-center font-medium py-2 px-3 flex-none">
+            {successMessage}
+          </div>
+        ) : null}
+
+        <div className="flex items-center justify-center text-center p-3 border-b flex-none">
+          <div className="w-full">
+            <div className="font-semibold text-amber-800">
+              Sajane Tea & Coffee Bar
+            </div>
+            <div className="text-sm font-medium text-gray-600">
               Order #{String(used._id ?? used.id ?? "").slice(-6)}
             </div>
             <div className="text-xs text-gray-500">
               {formatDate(used.createdAt)}
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handlePrint}
-              className="px-3 py-2 rounded bg-amber-600 text-white text-sm flex items-center gap-2"
-            >
-              <Printer size={16} /> Print
-            </button>
-          </div>
         </div>
 
-        <div id="receipt-print-area">
+        <div id="receipt-print-area" className="flex-1 overflow-auto">
           <div className="p-3 space-y-1 text-sm text-gray-800">
             {/* show only Table for dine-in, otherwise show Customer */}
             <div className="flex justify-between items-center">
@@ -190,9 +190,19 @@ export default function ReceiptModal({ open, onClose, order }) {
             )}
           </div>
         </div>
-
-        <div className="p-3 border-t flex items-center justify-end gap-2">
-          <button onClick={onClose} className="px-3 py-2 rounded border">
+        <div className="p-2 border-t rounded-b flex items-center justify-end gap-2 flex-none">
+          <div className="flex items-center">
+            <button
+              onClick={handlePrint}
+              className="px-3 py-2 border rounded bg-amber-600 text-white flex items-center gap-2 text-sm"
+            >
+              <Printer size={16} /> Print
+            </button>
+          </div>
+          <button
+            onClick={onClose}
+            className="px-3 py-2 rounded border bg-amber-600 text-white hover:bg-amber-700 text-sm"
+          >
             Close
           </button>
         </div>

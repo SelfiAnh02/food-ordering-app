@@ -25,7 +25,7 @@ export default function CategoryTabs({ categories = [], active, onChange }) {
               className={`px-4 py-2 rounded-xl border text-sm whitespace-nowrap transition ${
                 String(active) === String(c._id)
                   ? "bg-amber-600 text-white border-amber-600"
-                  : "bg-white border-amber-200 text-amber-800 hover:bg-amber-50"
+                  : "bg-white border-amber-400 text-amber-800 hover:bg-amber-50"
               }`}
             >
               {c.name}

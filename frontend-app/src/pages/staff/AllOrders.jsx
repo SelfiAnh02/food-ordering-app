@@ -84,19 +84,19 @@ export default function AllOrders() {
 
   return (
     <div className="p-2 rounded-lg bg-white h-full overflow-auto">
-      <div className="flex flex-col md:flex-row md:items-center gap-3 mb-4 ">
+      <div className="flex flex-col md:flex-row md:items-center gap-3 mb-4">
         <input
           placeholder="Search by id, customer, or product..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="flex-1 border rounded-xl px-3 py-2 min-w-0"
+          className="w-full md:flex-1 border border-amber-400 text-amber-800 rounded-xl px-3 py-2 min-w-0"
         />
 
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="border rounded-xl px-2 py-2"
+            className="w-full sm:w-auto border border-amber-400 text-amber-800 rounded-xl px-2 py-2"
           >
             <option value="">All Types</option>
             <option value="dine-in">Dine-In</option>
@@ -107,7 +107,7 @@ export default function AllOrders() {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="border rounded-xl px-2 py-2"
+            className="w-full sm:w-auto border border-amber-400 text-amber-800 rounded-xl px-2 py-2"
           >
             <option value="">All Status</option>
             <option value="pending">Menunggu</option>
@@ -121,7 +121,7 @@ export default function AllOrders() {
               setFilterType("");
               setFilterStatus("");
             }}
-            className="px-3 py-2 border rounded-xl bg-amber-600 text-white hover:bg-amber-700"
+            className="w-full sm:w-auto px-3 py-2 border border-amber-400 rounded-xl bg-amber-600 text-white hover:bg-amber-700"
           >
             Reset
           </button>

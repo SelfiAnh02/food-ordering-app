@@ -37,19 +37,11 @@ export default function PaymentMethodModal({ open, onClose, onChoose }) {
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl p-6 animate-fadeIn">
         {/* HEADER */}
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-amber-700">
+        <div className="flex justify-center text-center items-center mb-4">
+          <h2 className="text-xl font-bold  text-amber-800">
             Pilih Metode Pembayaran
           </h2>
-          {/* NOTE: tombol close (✕) intentionally removed per request */}
         </div>
-
-        <p className="text-gray-600 mb-4 text-sm">
-          Pilih metode transaksi yang akan digunakan pelanggan. Setelah memilih,
-          tekan <span className="font-semibold">Charge</span> untuk
-          menyelesaikan.
-        </p>
-
         {/* GRID OPTIONS */}
         <div className="grid grid-cols-2 gap-4">
           {methods.map((m) => {
