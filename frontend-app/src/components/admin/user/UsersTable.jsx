@@ -7,6 +7,7 @@ export default function UsersTable({
   loading = false,
   onDelete = () => {},
   onEdit,
+  startIndex = 0,
 }) {
   const cellPad = "px-4 py-3";
 
@@ -27,7 +28,7 @@ export default function UsersTable({
   }
 
   return (
-    <div className="rounded-lg overflow-x-auto bg-white border">
+    <div className="rounded-lg bg-white border border-amber-400">
       <table className="min-w-full table-auto border-collapse rounded-lg overflow-hidden">
         <colgroup>
           <col style={{ width: "5%" }} />
@@ -39,7 +40,7 @@ export default function UsersTable({
         </colgroup>
 
         <thead>
-          <tr className="text-sm text-gray-700 bg-gray-100 border-b">
+          <tr className="text-sm text-amber-800 bg-amber-50 border-b border-amber-400">
             <th className={`${cellPad} text-center font-semibold`}>No</th>
             <th className={`${cellPad} text-center font-semibold`}>Name</th>
             <th className={`${cellPad} text-center font-semibold`}>Email</th>
@@ -53,25 +54,37 @@ export default function UsersTable({
           {users.map((u, i) => (
             <tr
               key={u._id || u.id || i}
-              className="border-b hover:bg-gray-50 transition text-sm text-gray-700"
+              className="border-b border-amber-400 hover:bg-amber-50 transition text-sm text-gray-700"
             >
               {/* No */}
-              <td className={`${cellPad} text-center`}>{i + 1}</td>
+              <td className={`${cellPad} text-center`}>{startIndex + i + 1}</td>
 
               {/* Name */}
               <td className={`${cellPad} text-center align-middle`}>
-                <div className="font-medium text-gray-800">{u.name}</div>
+                <div className="font-medium text-amber-800">{u.name}</div>
               </td>
 
               {/* Email */}
-              <td className={`${cellPad} text-center text-gray-600`}>{u.email}</td>
+              <td className={`${cellPad} text-center text-gray-600`}>
+                {u.email}
+              </td>
 
               {/* Role */}
-              <td className={`${cellPad} text-center capitalize`}>{u.role}</td>
+              <td
+                className={`${cellPad} text-center capitalize text-amber-800`}
+              >
+                {u.role}
+              </td>
 
               {/* Created */}
               <td className={`${cellPad} text-center text-gray-600`}>
-                {new Date(u.createdAt || Date.now()).toLocaleString()}
+                {(() => {
+                  const d = new Date(u.createdAt || Date.now());
+                  const day = String(d.getDate()).padStart(2, "0");
+                  const month = String(d.getMonth() + 1).padStart(2, "0");
+                  const year = d.getFullYear();
+                  return `${day}/${month}/${year}`;
+                })()}
               </td>
 
               {/* Actions */}

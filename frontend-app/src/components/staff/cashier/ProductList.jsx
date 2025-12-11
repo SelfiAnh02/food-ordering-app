@@ -1,17 +1,6 @@
 export default function ProductList({ products = [], onSelect }) {
   return (
-    <div
-      className="
-        grid
-        grid-cols-2        /* Mobile */
-        mt-2
-        sm:grid-cols-3     /* ≥ 640px */
-        md:grid-cols-3     /* ≥ 768px - tablet */
-        lg:grid-cols-3     /* ≥ 1024px - laptop kecil */
-        xl:grid-cols-4     /* ≥ 1280px - desktop */
-        gap-3
-      "
-    >
+    <div className="grid grid-cols-2 mt-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3">
       {products.map((product) => {
         const imgSrc = product.image ?? "";
         const isOut = Number(product?.stock ?? 0) <= 0;
@@ -19,18 +8,15 @@ export default function ProductList({ products = [], onSelect }) {
         return (
           <div
             key={product._id}
-            className="
-              bg-white rounded-xl shadow-md 
-              border border-amber-400
-              p-3
-              flex flex-col
-              hover:shadow-lg transition
-              h-full 
-            "
+            className="bg-white rounded-xl shadow-md border border-amber-400 p-3 flex flex-col hover:shadow-lg transition min-h-[10rem] lg:min-h-[14.5rem]"
           >
-            <div className="w-full aspect-square object-cover rounded-lg bg-gray-100 overflow-hidden">
+            <div className="w-full h-24 lg:h-36 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
               {imgSrc ? (
-                <img src={imgSrc} className="w-full h-full object-cover" />
+                <img
+                  src={imgSrc}
+                  className="w-full h-full object-cover"
+                  alt={product.name}
+                />
               ) : (
                 <div className="text-gray-400 text-sm flex items-center justify-center h-full">
                   No Image
@@ -38,28 +24,30 @@ export default function ProductList({ products = [], onSelect }) {
               )}
             </div>
 
-            <p className="text-center text-amber-800 font-bold mt-2 line-clamp-2 min-h-[2.4em]">
-              {product.name}
-            </p>
+            <div className="mt-1">
+              <p className="text-center text-amber-800 font-semibold text-sm lg:text-base line-clamp-2 truncate">
+                {product.name}
+              </p>
+              <div className="text-center text-[10px] text-gray-500 mt-0.5">
+                Stock: {product.stock}
+              </div>
 
-            <div className="text-center text-sm text-gray-500">
-              Stock: {product.stock}
+              <div className="text-center text-amber-600 font-semibold text-sm lg:text-base mt-0.5">
+                Rp {Number(product.price).toLocaleString()}
+              </div>
             </div>
 
-            <div className="text-center text-[#FF8A00] font-bold text-lg mt-1">
-              Rp {Number(product.price).toLocaleString()}
+            <div className="mt-auto">
+              <button
+                className={`w-full py-2 rounded-md text-white text-sm font-semibold ${
+                  isOut ? "bg-gray-300" : "bg-amber-600 hover:bg-amber-700"
+                }`}
+                disabled={isOut}
+                onClick={() => onSelect(product)}
+              >
+                {isOut ? "Stok Habis" : "Tambah"}
+              </button>
             </div>
-
-            <button
-              className={`
-                mt-2 py-2 rounded-lg text-white font-semibold
-                ${isOut ? "bg-gray-300" : "bg-amber-600 hover:bg-amber-700"}
-              `}
-              disabled={isOut}
-              onClick={() => onSelect(product)}
-            >
-              {isOut ? "Stok Habis" : "Tambah"}
-            </button>
           </div>
         );
       })}

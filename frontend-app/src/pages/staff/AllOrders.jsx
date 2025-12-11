@@ -11,6 +11,7 @@ export default function AllOrders() {
   const [query, setQuery] = useState("");
   const [filterType, setFilterType] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [detailOpen, setDetailOpen] = useState(false);
 
@@ -20,6 +21,15 @@ export default function AllOrders() {
 
   const filtered = useMemo(() => {
     return (orders || []).filter((o) => {
+      // single-day filter (if provided)
+      if (date) {
+        const created = new Date(
+          o.createdAt ?? o.created_at ?? o.created ?? null
+        );
+        if (isNaN(created)) return false;
+        const d = created.toISOString().slice(0, 10);
+        if (d !== date) return false;
+      }
       const statusLocal = ((o.orderStatus ?? o.status) || "")
         .toString()
         .toLowerCase();
@@ -61,7 +71,7 @@ export default function AllOrders() {
       }
       return true;
     });
-  }, [orders, query, filterType, filterStatus]);
+  }, [orders, query, filterType, filterStatus, date]);
 
   function openDetail(o) {
     setSelectedOrder(o);
@@ -83,20 +93,29 @@ export default function AllOrders() {
   }
 
   return (
-    <div className="p-2 rounded-lg bg-white h-full overflow-auto">
+    <div className="p-4 rounded-lg shadow-sm border border-amber-200 shadow-amber-300 bg-white h-full overflow-auto">
       <div className="flex flex-col md:flex-row md:items-center gap-3 mb-4">
         <input
           placeholder="Search by id, customer, or product..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-full md:flex-1 border border-amber-400 text-amber-800 rounded-xl px-3 py-2 min-w-0"
+          className="w-full md:flex-1 border border-amber-400 text-sm text-amber-800 rounded-xl px-3 py-2 min-w-0"
         />
 
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="border border-amber-400 text-amber-800 text-sm rounded-xl px-2 py-2"
+            aria-label="Filter date"
+          />
+        </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="w-full sm:w-auto border border-amber-400 text-amber-800 rounded-xl px-2 py-2"
+            className="w-full sm:w-auto border border-amber-400 text-sm text-amber-800 rounded-xl px-2 py-2"
           >
             <option value="">All Types</option>
             <option value="dine-in">Dine-In</option>
@@ -107,7 +126,7 @@ export default function AllOrders() {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="w-full sm:w-auto border border-amber-400 text-amber-800 rounded-xl px-2 py-2"
+            className="w-full sm:w-auto border border-amber-400 text-sm text-amber-800 rounded-xl px-2 py-2"
           >
             <option value="">All Status</option>
             <option value="pending">Menunggu</option>
@@ -120,8 +139,9 @@ export default function AllOrders() {
               setQuery("");
               setFilterType("");
               setFilterStatus("");
+              setDate(() => new Date().toISOString().slice(0, 10));
             }}
-            className="w-full sm:w-auto px-3 py-2 border border-amber-400 rounded-xl bg-amber-600 text-white hover:bg-amber-700"
+            className="w-full sm:w-auto px-3 py-2 border border-amber-400 rounded-xl bg-amber-600 text-sm text-white hover:bg-amber-700"
           >
             Reset
           </button>

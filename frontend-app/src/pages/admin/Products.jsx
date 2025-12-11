@@ -88,20 +88,20 @@ export default function Products() {
   // ------------------------------------------------
 
   return (
-    <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 min-h-screen flex flex-col">
+    <div className="flex-1 h-full bg-white rounded-lg shadow-sm border border-amber-200 shadow-amber-300 flex flex-col min-h-0">
       {/* Wrapper utama */}
-      <div className="flex-1 flex flex-col p-4 sm:p-6">
+      <div className="flex-1 flex flex-col p-4 sm:p-6 min-h-0">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
           <div className="flex-1 flex flex-wrap items-center gap-2">
             <div className="flex-1 min-w-[180px]">
-              <div className="flex items-center bg-white border rounded-md px-2 py-1">
+              <div className="flex items-center bg-white border rounded-lg border-amber-400 px-2 py-1">
                 {/* NOTE: use local searchTerm so we don't trigger useProducts fetch */}
                 <input
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search by name, id, category..."
-                  className="outline-none text-sm w-full px-2 py-1"
+                  className="outline-none text-amber-800 text-sm w-full px-2 py-1"
                 />
               </div>
             </div>
@@ -109,7 +109,7 @@ export default function Products() {
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setView("table")}
-                className={`p-2 rounded-md border ${
+                className={`p-2 rounded-lg border border-amber-400 text-amber-800 ${
                   view === "table" ? "bg-gray-100" : "bg-white"
                 }`}
                 title="Table view"
@@ -119,7 +119,7 @@ export default function Products() {
 
               <button
                 onClick={() => setView("card")}
-                className={`p-2 rounded-md border ${
+                className={`p-2 rounded-lg border border-amber-400 text-amber-800 ${
                   view === "card" ? "bg-gray-100" : "bg-white"
                 }`}
                 title="Card view"
@@ -140,15 +140,18 @@ export default function Products() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto hide-scrollbar">
+        <div className="flex-1 overflow-y-auto hide-scrollbar min-h-0">
           {error ? (
-            <div className="rounded-md text-red-600">Gagal memuat produk.</div>
+            <div className="rounded-lg text-amber-600">
+              Gagal memuat produk.
+            </div>
           ) : filteredProducts.length === 0 ? (
             <h2>No products found.</h2>
           ) : view === "table" ? (
             <div>
               <ProductTable
                 products={filteredProducts}
+                startIndex={(page - 1) * /* limit from hook */ 9}
                 onView={(p) => openModal("view", p)}
                 onEdit={(p) => openModal("edit", p)}
                 onDelete={onDelete}
@@ -167,7 +170,7 @@ export default function Products() {
         </div>
 
         {/* Pagination (still based on server pages) */}
-        <div className="mt-4">
+        <div className="mt-2">
           <Pagination
             page={page}
             totalPages={totalPages}
@@ -177,10 +180,7 @@ export default function Products() {
 
         {/* Modal area (view/add/edit) */}
         {modal.open && modal.mode === "view" && modal.product && (
-          <Modal
-            title={`Product #${String(modal.product.id).slice(0, 8)}`}
-            onClose={closeModal}
-          >
+          <Modal title={`Product #${String(modal.product.id).slice(0, 8)}`}>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="sm:col-span-1">
                 {modal.product.image ? (
@@ -216,7 +216,10 @@ export default function Products() {
             </div>
 
             <div className="mt-4 flex flex-col sm:flex-row justify-end gap-2">
-              <button onClick={closeModal} className="px-3 py-2 border rounded">
+              <button
+                onClick={closeModal}
+                className="px-3 py-2 border rounded-lg border-amber-400 bg-amber-600 hover:bg-amber-700 text-white"
+              >
                 Close
               </button>
               <button
@@ -224,7 +227,7 @@ export default function Products() {
                   closeModal();
                   openModal("edit", modal.product);
                 }}
-                className="px-3 py-2 border rounded bg-yellow-100"
+                className="px-3 py-2 border rounded-lg border-amber-400 bg-yellow-100"
               >
                 Edit
               </button>
@@ -234,7 +237,7 @@ export default function Products() {
                   const ok = confirm(`Delete product "${modal.product.name}"?`);
                   if (ok) onDelete(modal.product);
                 }}
-                className="px-3 py-2 border rounded text-red-600"
+                className="px-3 py-2 border rounded-lg text-red-600"
               >
                 Delete
               </button>

@@ -11,9 +11,15 @@ export default function Sidebar({ menu }) {
 
   return (
     // Desktop sidebar: fixed and full height; hidden on small screens (mobile overlay used)
-    <aside className="fixed top-0 left-0 h-screen w-60 bg-white border-r border-amber-100 z-40 flex flex-col">
+    <aside
+      className="fixed top-0 left-0 h-screen w-60 bg-white border-r border-amber-300 z-40 flex flex-col"
+      style={{ boxShadow: "4px 0 12px rgba(15, 23, 42, 0.06)" }}
+    >
       {/* Top: Logo + Brand */}
-      <div className="px-6 py-5 border-b border-amber-100 flex items-center gap-4 bg-gradient-to-r from-[#fff7ef] to-white">
+      <div
+        className="px-6 py-5 border-b border-amber-300 flex items-center gap-4 bg-gradient-to-r from-[#fff7ef] to-white"
+        style={{ boxShadow: "0 6px 12px rgba(15, 23, 42, 0.06)" }}
+      >
         <div className="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center">
           <img
             src={logo}

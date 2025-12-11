@@ -1,10 +1,12 @@
 // src/pages/admin/OrdersPage.jsx
+import { useEffect } from "react";
 import useOrderAdmin from "../../hooks/admin/useOrderAdmin.js";
 import OrderFilter from "../../components/admin/order/OrderFilter.jsx";
 import OrderStatsCard from "../../components/admin/order/OrderStatsCard.jsx";
 import OrderTopProducts from "../../components/admin/order/OrderTopProducts.jsx";
 import OrderTableAdmin from "../../components/admin/order/OrderTableAdmin.jsx";
-import OrderDetailModal from "../../components/admin/order/OrderDetailModal.jsx";
+// Use the staff order detail modal so admin sees the same detail layout
+import OrderDetailModal from "../../components/admin/order/OrderDetailModal";
 
 export default function OrdersPage() {
   const {
@@ -29,6 +31,24 @@ export default function OrdersPage() {
     fetchOrders(updated);
   };
 
+  // On first mount ensure default table shows today's orders and 10 per page
+  useEffect(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    const needsDate = !filters?.startDate && !filters?.endDate;
+    const needsLimit = Number(filters?.limit) !== 10;
+    if (needsDate || needsLimit) {
+      const payload = {};
+      if (needsDate) {
+        payload.startDate = today;
+        payload.endDate = today;
+      }
+      if (needsLimit) payload.limit = 10;
+      const updated = { ...filters, ...payload, page: 1 };
+      setFilters(updated);
+      fetchOrders(updated);
+    }
+  }, [filters, setFilters, fetchOrders]);
+
   // Change page: update filters and fetch
   const handlePageChange = (page) => {
     const updated = { ...filters, page };
@@ -37,43 +57,50 @@ export default function OrdersPage() {
   };
 
   return (
-    <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100">
-      <div className="p-4 sm:p-6">
+    <div className="flex-1 h-full bg-white rounded-lg shadow-sm border border-amber-200 shadow-amber-300 overflow-visible lg:overflow-hidden lg:max-h-[calc(100vh-4rem)]">
+      <div className="p-4 sm:p-6 flex flex-col min-h-0 overflow-visible lg:overflow-hidden">
         {/* Stats — will show fallback values if loading or stats null */}
         <OrderStatsCard stats={stats} />
 
         {/* Layout utama */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left column: filter + table */}
-          <div className="lg:col-span-2 space-y-4">
-            <OrderFilter
-              initial={{
-                orderStatus: filters.orderStatus,
-                startDate: filters.startDate,
-                endDate: filters.endDate,
-              }}
-              onApply={applyFilters}
-            />
+          {/* Left column: filter + table (table area scrolls on lg) */}
+          <div className="lg:col-span-2 flex flex-col">
+            <div className="flex flex-col min-h-0 lg:max-h-[65vh] lg:overflow-hidden lg:flex lg:flex-col">
+              <div>
+                <OrderFilter
+                  initial={{
+                    orderStatus: filters.orderStatus,
+                    startDate: filters.startDate,
+                    endDate: filters.endDate,
+                  }}
+                  onApply={applyFilters}
+                />
+              </div>
 
-            <div className="w-full overflow-x-auto lg:overflow-x-visible">
-              <OrderTableAdmin
-                orders={orders}
-                loading={loadingOrders}
-                page={filters?.page ?? 1}
-                limit={filters?.limit ?? 20}
-                totalPages={filters?.totalPages ?? 1}
-                onPageChange={handlePageChange}
-                onView={(id) => openOrderDetail(id)}
-              />
+              <div className="w-full min-h-0 overflow-visible lg:flex-1 lg:overflow-auto hide-scrollbar">
+                <div className="pt-4 w-full overflow-x-auto lg:overflow-x-visible">
+                  <OrderTableAdmin
+                    orders={orders}
+                    loading={loadingOrders}
+                    page={filters?.page ?? 1}
+                    limit={filters?.limit ?? 20}
+                    totalPages={filters?.totalPages ?? 1}
+                    onPageChange={handlePageChange}
+                    onView={(id) => openOrderDetail(id)}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Right column: top products */}
+          {/* Right column: top products (scrollable on lg) */}
           <div className="lg:col-span-1">
-            {/* prefer hook-provided topProducts (hook computes fallback from orders) */}
-            <OrderTopProducts
-              topProducts={topProducts ?? stats?.topProducts ?? []}
-            />
+            <div className="min-h-0 lg:max-h-[65vh] lg:overflow-auto overflow-visible">
+              <OrderTopProducts
+                topProducts={topProducts ?? stats?.topProducts ?? []}
+              />
+            </div>
           </div>
         </div>
 

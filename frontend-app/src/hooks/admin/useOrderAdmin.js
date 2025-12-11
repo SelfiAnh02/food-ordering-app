@@ -263,13 +263,49 @@ export default function useOrderAdmin(initialFilters = {}) {
   const derivedStats = useMemo(() => {
     const all = allOrders || [];
 
-    // totalRevenue: sum(totalPrice OR payment.amount) for orders with payment.status === 'paid'
+    // determine date window same as topProducts (use filters if provided, else default to today)
+    let startKey;
+    let endKey;
+    if (filters.startDate || filters.endDate) {
+      startKey = filters.startDate
+        ? filters.startDate.length === 10 &&
+          /^\d{4}-\d{2}-\d{2}$/.test(filters.startDate)
+          ? filters.startDate
+          : toLocalDateKey(filters.startDate)
+        : null;
+      endKey = filters.endDate
+        ? filters.endDate.length === 10 &&
+          /^\d{4}-\d{2}-\d{2}$/.test(filters.endDate)
+          ? filters.endDate
+          : toLocalDateKey(filters.endDate)
+        : null;
+    } else {
+      const t = new Date();
+      const y = t.getFullYear();
+      const m = String(t.getMonth() + 1).padStart(2, "0");
+      const d = String(t.getDate()).padStart(2, "0");
+      startKey = `${y}-${m}-${d}`;
+      endKey = startKey;
+    }
+
+    const effStatus = (filters.orderStatus ?? "").toString().toLowerCase();
+
+    // totalRevenue: sum(totalPrice OR payment.amount) for orders with payment.status === 'paid' filtered by current window and status
     const totalRevenue = all.reduce((acc, o) => {
+      const k = toLocalDateKey(o.createdAt);
+      if (!k) return acc;
+      if (startKey && k < startKey) return acc;
+      if (endKey && k > endKey) return acc;
+
+      if (effStatus && effStatus !== "") {
+        if ((o.orderStatus ?? "").toString().toLowerCase() !== effStatus)
+          return acc;
+      }
+
       const payStatus = (o.payment?.status ?? o.paymentDetails?.status ?? "")
         .toString()
         .toLowerCase();
       if (payStatus === "paid") {
-        // prefer payment.amount if provided
         const payAmount = safeToNum(
           o.payment?.amount ?? o.paymentDetails?.amount
         );
@@ -279,26 +315,31 @@ export default function useOrderAdmin(initialFilters = {}) {
       return acc;
     }, 0);
 
-    // totalOrders: count of orders with createdAt == today (local)
-    const today = new Date();
-    const y = today.getFullYear();
-    const m = String(today.getMonth() + 1).padStart(2, "0");
-    const d = String(today.getDate()).padStart(2, "0");
-    const todayKey = `${y}-${m}-${d}`;
-
-    const totalOrdersToday = all.reduce((acc, o) => {
+    // totalOrders: count of orders within window (local)
+    const totalOrdersInWindow = all.reduce((acc, o) => {
       const k = toLocalDateKey(o.createdAt);
-      return acc + (k === todayKey ? 1 : 0);
+      if (!k) return acc;
+      if (startKey && k < startKey) return acc;
+      if (endKey && k > endKey) return acc;
+      return acc + 1;
     }, 0);
 
-    // delivered count
+    // delivered count in window
     const deliveredCount = all.reduce((acc, o) => {
+      const k = toLocalDateKey(o.createdAt);
+      if (!k) return acc;
+      if (startKey && k < startKey) return acc;
+      if (endKey && k > endKey) return acc;
       const st = (o.orderStatus ?? "").toString().toLowerCase();
       return acc + (st === "confirmed" ? 1 : 0);
     }, 0);
 
-    return { totalRevenue, totalOrdersToday, deliveredCount };
-  }, [allOrders]);
+    return {
+      totalRevenue,
+      totalOrdersToday: totalOrdersInWindow,
+      deliveredCount,
+    };
+  }, [allOrders, filters.startDate, filters.endDate, filters.orderStatus]);
   // Merge server stats with derived stats
   const effectiveStats = useMemo(() => {
     const server = stats ?? {};

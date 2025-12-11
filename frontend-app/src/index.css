@@ -5,13 +5,13 @@
    THEME COLOR VARIABLES
 ==================================*/
 :root {
-  --brown-900: #5B3A29;
-  --brown-700: #8B5E3C;
-  --cream: #F7EFE7;
-  --beige: #D9C6B6;
-  --muted-green: #6AA78A;
-  --soft-teal: #6BC3C1;
-  --panel-border: rgba(0,0,0,0.15);
+  --brown-900: #5b3a29;
+  --brown-700: #8b5e3c;
+  --cream: #f7efe7;
+  --beige: #d9c6b6;
+  --muted-green: #6aa78a;
+  --soft-teal: #6bc3c1;
+  --panel-border: rgba(0, 0, 0, 0.15);
 }
 
 /* ================================
@@ -20,27 +20,26 @@
 body {
   background-color: var(--cream);
   color: var(--brown-900);
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 /* Small utility for rounded box borders */
 .panel {
-  border: 1px solid var(--panel-border);
   background: #fff;
   border-radius: 10px;
-  box-shadow: 0 2px 0 rgba(0,0,0,0.03);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.03);
 }
 
 /* Subtle muted panel background */
 .panel-muted {
   background: #f6f1ed; /* warm light bg */
-  border: 1px solid rgba(0,0,0,0.06);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 9999px;
 }
 
 /* Pill buttons (for table preview or tags) */
 .pill {
-  border: 1px solid rgba(0,0,0,0.18);
+  border: 1px solid rgba(0, 0, 0, 0.18);
   background: #fff;
   border-radius: 12px;
   padding: 6px 10px;
@@ -54,7 +53,7 @@ body {
   background: linear-gradient(180deg, var(--beige) 0%, var(--cream) 100%);
   border-bottom-left-radius: 18px;
   border-bottom-right-radius: 18px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
   position: relative;
   z-index: 30;
 }
@@ -79,7 +78,7 @@ body {
 
 /* Search input focus polish */
 .panel-muted input:focus {
-  box-shadow: 0 0 0 4px rgba(139,94,60,0.06);
+  box-shadow: 0 0 0 4px rgba(139, 94, 60, 0.06);
   outline: none;
 }
 
@@ -90,8 +89,13 @@ body {
   .sidebar-desktop {
     display: none;
   }
-  .content-wrap { flex-direction: column; }
-  .sidebar-below-header { width: 100%; margin-bottom: 12px; }
+  .content-wrap {
+    flex-direction: column;
+  }
+  .sidebar-below-header {
+    width: 100%;
+    margin-bottom: 12px;
+  }
 }
 
 /* ================================

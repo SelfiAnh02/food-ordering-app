@@ -118,26 +118,30 @@ export default function ProductForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
+    <form onSubmit={handleSubmit} className="space-y-4 text-amber-800">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="text-sm block mb-1">Name</label>
+          <label className="text-sm block mb-1 text-amber-800 font-medium">
+            Name
+          </label>
           <input
             value={form.name}
             onChange={(e) => change("name", e.target.value)}
-            className="w-full border rounded px-2 py-1"
+            className="w-full border border-amber-400 rounded px-3 py-2 text-amber-800"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Category</label>
+          <label className="block text-sm font-medium mb-1 text-amber-800">
+            Category
+          </label>
           <select
             value={form.categoryId ?? ""}
             onChange={(e) =>
               setForm((s) => ({ ...s, categoryId: e.target.value }))
             }
-            className="w-full border rounded px-3 py-2"
+            className="w-full border border-amber-400 rounded px-3 py-2 text-amber-800"
             required
           >
             <option value="">Select category</option>
@@ -150,35 +154,46 @@ export default function ProductForm({
         </div>
 
         <div>
-          <label className="text-sm block mb-1">Price (IDR)</label>
+          <label className="text-sm block mb-1 text-amber-800 font-medium">
+            Price (IDR)
+          </label>
           <input
             type="text"
             inputMode="numeric"
             value={form.priceText}
             onChange={handlePriceTextChange}
             placeholder="e.g. 35.000"
-            className="w-full border rounded px-2 py-1"
+            className="w-full border border-amber-400 rounded px-3 py-2 text-amber-800"
           />
         </div>
 
         <div>
-          <label className="text-sm block mb-1">Stock</label>
+          <label className="text-sm block mb-1 text-amber-800 font-medium">
+            Stock
+          </label>
           <input
             type="number"
             value={form.stock}
             onChange={(e) => change("stock", Number(e.target.value))}
-            className="w-full border rounded px-2 py-1"
+            className="w-full border border-amber-400 rounded px-3 py-2 text-amber-800"
             min="0"
           />
         </div>
       </div>
 
       <div>
-        <label className="text-sm block mb-1">Image</label>
+        <label className="text-sm block mb-1 text-amber-800 font-medium">
+          Image
+        </label>
         <div className="flex gap-3 items-center">
-          <input type="file" accept="image/*" onChange={handleImageFile} />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageFile}
+            className="text-amber-800"
+          />
           {form.image ? (
-            <div className="w-20 h-20 border rounded overflow-hidden">
+            <div className="w-24 h-24 border border-amber-400 rounded overflow-hidden">
               <img
                 src={form.image}
                 alt="preview"
@@ -186,7 +201,7 @@ export default function ProductForm({
               />
             </div>
           ) : (
-            <div className="w-20 h-20 border rounded flex items-center justify-center text-sm text-gray-400">
+            <div className="w-24 h-24 border border-amber-400 rounded flex items-center justify-center text-sm text-amber-400">
               No image
             </div>
           )}
@@ -194,11 +209,13 @@ export default function ProductForm({
       </div>
 
       <div>
-        <label className="text-sm block mb-1">Description</label>
+        <label className="text-sm block mb-1 text-amber-800 font-medium">
+          Description
+        </label>
         <textarea
           value={form.description}
           onChange={(e) => change("description", e.target.value)}
-          className="w-full border rounded px-2 py-1"
+          className="w-full border border-amber-400 rounded-lg px-3 py-2 text-amber-800"
           rows={3}
         />
       </div>
@@ -207,13 +224,13 @@ export default function ProductForm({
         <button
           type="button"
           onClick={onCancel}
-          className="px-3 py-2 border rounded"
+          className="px-3 py-2 border border-amber-400 rounded-lg text-amber-800 bg-white"
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="px-3 py-2 rounded bg-[var(--brown-700)] text-white"
+          className="px-3 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white"
           disabled={saving}
         >
           {saving ? "Saving..." : "Save"}

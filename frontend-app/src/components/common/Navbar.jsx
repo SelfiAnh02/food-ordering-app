@@ -53,7 +53,10 @@ export default function Navbar({
 
   return (
     // header styling only; position handled by layout
-    <header className="h-16 flex items-center justify-between px-4 md:px-6 lg:px-10 bg-white border-b border-amber-100 max-w-full">
+    <header
+      className="h-16 flex items-center justify-between px-4 md:px-6 lg:px-10 bg-white border-b border-amber-300 max-w-full"
+      style={{ boxShadow: "0 6px 12px rgba(15, 23, 42, 0.06)" }}
+    >
       {" "}
       {/* left: toggle + title */}
       <div className="flex items-center gap-3 min-w-0">
@@ -104,7 +107,7 @@ export default function Navbar({
                   className="w-full text-left px-3 py-1 border rounded-md hover:bg-amber-700 bg-amber-600 text-white text-sm font-medium"
                 >
                   {isStaff ? "Switch to Admin" : "Switch to Staff"}
-                </button> 
+                </button>
               </div>
             </div>
           )}
