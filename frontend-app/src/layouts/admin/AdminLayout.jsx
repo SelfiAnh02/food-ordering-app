@@ -63,7 +63,7 @@ export default function AdminLayout({ children }) {
   };
 
   return (
-    <div className="h-screen w-screen flex bg-gray-100 overflow-hidden">
+    <div className="h-screen w-screen flex bg-amber-50 overflow-hidden">
       {/* Desktop sidebar (fixed) */}
       <div className="hidden md:block">
         <Sidebar menu={menu} />
@@ -97,7 +97,18 @@ export default function AdminLayout({ children }) {
           />
         </div>
         {/* beri ruang atas setinggi header (h-16) agar konten tidak tertutup; padding-top diminta = 20 */}
-        <main className="flex-1 w-full overflow-y-auto px-6 py-8 pt-20 overflow-x-hidden">
+        <main
+          className="
+          flex-1 
+          pt-18
+          w-full 
+          overflow-y-auto 
+          overflow-x-hidden 
+          px-2 
+          pb-2
+        "
+        >
+          {" "}
           {/* <main className="flex-1 w-full px-5 py-5 md:px-8 md:py-8 pt-20 overflow-x-hidden overflow-y-auto">
            */}
           {children ? children : <Outlet />}

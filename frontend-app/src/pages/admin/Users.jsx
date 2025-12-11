@@ -1,6 +1,7 @@
 // src/pages/admin/Users.jsx
 import { useMemo, useState } from "react";
 import useUsers from "../../hooks/admin/useUsers";
+import Pagination from "../../components/common/pagination";
 import UsersTable from "../../components/admin/user/UsersTable";
 import CreateStaffModal from "../../components/admin/user/CreateStaffModal";
 
@@ -17,7 +18,9 @@ export default function Users() {
   const filtered = useMemo(() => {
     if (!filter) return users;
     const q = filter.toLowerCase();
-    return users.filter((u) => `${u.name} ${u.email}`.toLowerCase().includes(q));
+    return users.filter((u) =>
+      `${u.name} ${u.email}`.toLowerCase().includes(q)
+    );
   }, [users, filter]);
 
   const totalItems = filtered.length;
@@ -44,16 +47,15 @@ export default function Users() {
   };
 
   return (
-    <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 min-h-screen flex flex-col">
+    <div className="flex-1 h-full bg-white rounded-lg shadow-sm border border-amber-200 shadow-amber-300 flex flex-col min-h-0">
       {/* Wrapper utama */}
-      <div className="flex-1 flex flex-col p-4 sm:p-6">
-
+      <div className="flex-1 flex flex-col p-4 sm:p-6 min-h-0">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-          <div className="flex flex-1 items-center flex-wrap gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+          <div className="flex flex-1 items-center flex-wrap gap-2">
             {/* Search bar */}
-            <div className="flex-1 min-w-[180px] sm:min-w-[250px]">
-              <div className="flex items-center bg-white border rounded-md px-2 py-1">
+            <div className="flex-1 min-w-[180px]">
+              <div className="flex items-center bg-white border rounded-lg border-amber-400 px-2 py-1">
                 <input
                   aria-label="Search users"
                   placeholder="Search by name or email..."
@@ -73,7 +75,7 @@ export default function Users() {
                 setItemsPerPage(Number(e.target.value));
                 setPage(1);
               }}
-              className="border rounded-md px-2 py-2 text-sm bg-white"
+              className="border rounded-lg border-amber-400 px-2 py-2 text-sm text-amber-800 bg-white"
               aria-label="Items per page"
             >
               {[5, 10, 20, 50].map((n) => (
@@ -97,64 +99,22 @@ export default function Users() {
         {error && <div className="text-red-600 mb-3">{error}</div>}
 
         {/* Table */}
-        <div className="min-w-full flex-1 overflow-x-auto">
-          <UsersTable users={pagedUsers} loading={loading} onDelete={handleDelete} />
+        <div className="min-w-full flex-1 overflow-y-auto hide-scrollbar min-h-0">
+          <UsersTable
+            users={pagedUsers}
+            loading={loading}
+            onDelete={handleDelete}
+            startIndex={(page - 1) * itemsPerPage}
+          />
         </div>
 
-        {/* Pagination controls */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6 border-t pt-4">
-          <div className="text-sm text-gray-600 text-center sm:text-left">
-            Showing{" "}
-            <span className="font-medium">
-              {Math.min((page - 1) * itemsPerPage + 1, totalItems || 0)}
-            </span>{" "}
-            -{" "}
-            <span className="font-medium">
-              {Math.min(page * itemsPerPage, totalItems)}
-            </span>{" "}
-            of <span className="font-medium">{totalItems}</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setPage(1)}
-              disabled={page === 1}
-              className="px-2 py-1 rounded border disabled:opacity-50"
-              aria-label="First page"
-            >
-              «
-            </button>
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="px-3 py-1 rounded border disabled:opacity-50"
-              aria-label="Previous page"
-            >
-              Prev
-            </button>
-
-            <div className="px-3 py-1 border rounded text-sm bg-gray-50">
-              Page <span className="font-medium">{page}</span> /{" "}
-              <span>{totalPages}</span>
-            </div>
-
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="px-3 py-1 rounded border disabled:opacity-50"
-              aria-label="Next page"
-            >
-              Next
-            </button>
-            <button
-              onClick={() => setPage(totalPages)}
-              disabled={page === totalPages}
-              className="px-2 py-1 rounded border disabled:opacity-50"
-              aria-label="Last page"
-            >
-              »
-            </button>
-          </div>
+        {/* Pagination (still based on server pages) */}
+        <div className="mt-4">
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={(p) => setPage(p)}
+          />
         </div>
       </div>
 
@@ -166,5 +126,4 @@ export default function Users() {
       />
     </div>
   );
-
 }

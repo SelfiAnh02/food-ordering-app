@@ -17,11 +17,24 @@ export default function OrderTableAdmin({
   onView,
   loading = false,
 }) {
-  // compute offset for numbering
-  const offset = (Number(page) - 1) * Number(limit);
+  // normalize paging values
+  const numericPage = Math.max(1, Number(page) || 1);
+  const numericLimit = Math.max(1, Number(limit) || 10);
+
+  // compute offset for numbering and slice orders for current page
+  const offset = (numericPage - 1) * numericLimit;
+  const displayedOrders = Array.isArray(orders)
+    ? orders.slice(offset, offset + numericLimit)
+    : [];
+
+  // derive total pages: prefer provided `totalPages` if > 1, otherwise compute from orders
+  const computedTotalPages =
+    Number(totalPages) > 1
+      ? Number(totalPages)
+      : Math.max(1, Math.ceil((orders?.length || 0) / numericLimit));
 
   return (
-    <div className="rounded-lg bg-white border">
+    <div className="rounded-lg bg-white border border-amber-400 shadow-amber-300">
       {/* wrapper untuk membuat tabel bisa discroll horizontal di layar kecil */}
       <div className=" overflow-x-auto rounded-lg">
         <table className="min-w-full table-auto text-center border-collapse overflow-hidden">
@@ -33,15 +46,15 @@ export default function OrderTableAdmin({
             <col style={{ width: "10%" }} />
             <col style={{ width: "20%" }} />
           </colgroup>
-          <thead className="bg-gray-100 text-gray-700 text-sm border-b">
+          <thead className="bg-amber-50 text-amber-800 text-sm border-b border-amber-400">
             <tr>
-              <th className="px-3 py-2 text-center">No</th>
-              <th className="px-3 py-2 text-center">Items</th>
-              <th className="px-3 py-2 text-center">Total</th>
-              <th className="px-3 py-2 text-center">Table</th>
-              <th className="px-3 py-2 text-center">Status</th>
-              <th className="px-3 py-2 text-center">Created</th>
-              <th className="px-3 py-2 text-center">Actions</th>
+              <th className="px-4 py-2 text-center">No</th>
+              <th className="px-4 py-2 text-center">Items</th>
+              <th className="px-4 py-2 text-center">Total</th>
+              <th className="px-4 py-2 text-center">Table</th>
+              <th className="px-4 py-2 text-center">Status</th>
+              <th className="px-4 py-2 text-center">Created</th>
+              <th className="px-4 py-2 text-center">Actions</th>
             </tr>
           </thead>
 
@@ -55,13 +68,13 @@ export default function OrderTableAdmin({
             )}
 
             {!loading &&
-              orders.length > 0 &&
-              orders.map((order, i) => (
+              displayedOrders.length > 0 &&
+              displayedOrders.map((order, i) => (
                 <tr
                   key={order._id ?? `${i}`}
-                  className="border-t border-gray-200 hover:bg-gray-50 text-sm align-top"
+                  className="border-t border-amber-400 hover:bg-amber-50 text-sm align-top"
                 >
-                  <td className="px-3 py-2 whitespace-nowrap">
+                  <td className="px-4 py-2 whitespace-nowrap">
                     {offset + i + 1}
                   </td>
 
@@ -112,7 +125,7 @@ export default function OrderTableAdmin({
                 </tr>
               ))}
 
-            {!loading && orders.length === 0 && (
+            {!loading && displayedOrders.length === 0 && (
               <tr>
                 <td colSpan="7" className="text-center py-6 text-gray-500">
                   No orders found.
@@ -123,10 +136,10 @@ export default function OrderTableAdmin({
         </table>
       </div>
 
-      <div className="p-4 flex justify-center">
+      <div className="pb-4 flex justify-center border-t border-amber-400">
         <Pagination
           page={page}
-          totalPages={totalPages}
+          totalPages={computedTotalPages}
           onPageChange={onPageChange}
         />
       </div>

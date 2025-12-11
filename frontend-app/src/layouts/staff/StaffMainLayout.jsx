@@ -65,7 +65,7 @@ export default function StaffMainLayout({ children }) {
   };
 
   return (
-    <div className="h-screen w-screen flex bg-gray-100 overflow-hidden relative">
+    <div className="h-screen w-screen flex bg-amber-50 overflow-hidden relative">
       {/* SIDEBAR DESKTOP (lg+) — FIXED LEFT */}
       <div className="hidden lg:block fixed left-0 top-0 bottom-0 w-60 bg-white border-r z-40">
         <Sidebar menu={menu} />
@@ -103,7 +103,7 @@ export default function StaffMainLayout({ children }) {
           overflow-y-auto 
           overflow-x-hidden 
           px-2 
-          lg:pl-60   /* offset sama dengan lebar sidebar (w-60) */
+          lg:pl-62   /* offset sama dengan lebar sidebar (w-60) */
           pb-2
         "
       >

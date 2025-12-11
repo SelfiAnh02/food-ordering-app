@@ -280,7 +280,11 @@ export default function CashierDashboard() {
         h-full 
         bg-gray-50 
         overflow-hidden
-        rounded-lg
+        rounded-lg 
+        shadow-sm 
+        border 
+        border-amber-200
+        shadow-amber-300
       "
     >
       {/* LEFT */}

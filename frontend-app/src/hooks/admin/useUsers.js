@@ -1,6 +1,6 @@
 // src/hooks/useUsers.js
-import { useCallback, useEffect, useState } from 'react';
-import * as usersAPI from '../../services/admin/userService';
+import { useCallback, useEffect, useState } from "react";
+import * as usersAPI from "../../services/admin/userService";
 
 export default function useUsers() {
   const [users, setUsers] = useState([]);
@@ -18,16 +18,19 @@ export default function useUsers() {
       setUsers(Array.isArray(usersList) ? usersList : []);
     } catch (err) {
       // Normalize error message
-      const msg = err?.response?.data?.message || err?.message || 'Gagal memuat users';
+      const msg =
+        err?.response?.data?.message || err?.message || "Gagal memuat users";
       setError(msg);
     } finally {
       setLoading(false);
     }
-  }, [refreshKey]);
+  }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load, refreshKey]);
 
-  const refresh = () => setRefreshKey(k => k + 1);
+  const refresh = () => setRefreshKey((k) => k + 1);
 
   const remove = async (id) => {
     try {
@@ -36,7 +39,8 @@ export default function useUsers() {
       refresh();
       return { success: true };
     } catch (err) {
-      const msg = err?.response?.data?.message || err?.message || 'Gagal menghapus';
+      const msg =
+        err?.response?.data?.message || err?.message || "Gagal menghapus";
       return { success: false, message: msg };
     } finally {
       setLoading(false);
@@ -50,7 +54,8 @@ export default function useUsers() {
       refresh();
       return { success: true };
     } catch (err) {
-      const msg = err?.response?.data?.message || err?.message || 'Gagal membuat staff';
+      const msg =
+        err?.response?.data?.message || err?.message || "Gagal membuat staff";
       return { success: false, message: msg };
     } finally {
       setLoading(false);

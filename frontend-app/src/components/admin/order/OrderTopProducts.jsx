@@ -3,8 +3,10 @@ import { formatPrice } from "../../../utils/orderUtils";
 
 export default function OrderTopProducts({ topProducts = [] }) {
   return (
-    <div className="panel p-4 rounded-md bg-white border border-gray-100">
-      <h3 className="text-lg font-medium mb-3">Top Products</h3>
+    <div className="panel p-4 mt-6 rounded-lg bg-white border border-amber-400 shadow-amber-300">
+      <h3 className="text-lg text-amber-800 font-semibold mb-3">
+        Top Products
+      </h3>
       <ul className="space-y-3">
         {!topProducts || topProducts.length === 0 ? (
           <li className="text-sm text-gray-500">No data</li>
