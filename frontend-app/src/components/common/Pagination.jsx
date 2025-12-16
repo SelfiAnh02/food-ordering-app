@@ -25,7 +25,7 @@ export default function Pagination({
         <button
           onClick={() => to(page - 1)}
           disabled={page === 1}
-          className={`px-3 py-1 rounded-lg border border-amber-400 text-amber-800 text-sm ${
+          className={`px-3 py-1 rounded-lg border border-amber-400 text-amber-800 text-sm font-bold ${
             page === 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-amber-50"
           }`}
         >
@@ -39,7 +39,7 @@ export default function Pagination({
         <button
           onClick={() => to(page + 1)}
           disabled={page === totalPages}
-          className={`px-3 py-1 rounded-lg border border-amber-400 text-amber-800 text-sm ${
+          className={`px-3 py-1 rounded-lg border border-amber-400 text-amber-800 text-sm font-bold ${
             page === totalPages
               ? "opacity-50 cursor-not-allowed"
               : "hover:bg-amber-50"

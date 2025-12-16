@@ -15,6 +15,7 @@ import StaffMainLayout from "./layouts/staff/StaffMainLayout";
 import CashierDashboard from "./pages/staff/CashierDashboard";
 import AllOrders from "./pages/staff/AllOrders";
 import Reports from "./pages/staff/Reports";
+import CustomersLayout from "./layouts/customer/CustomersLayout";
 
 export default function App() {
   const [loading, setLoading] = useState(true);
@@ -110,6 +111,10 @@ export default function App() {
           {/* <Route path="orders" element={<StaffOrders />} />
           <Route path="incoming-orders" element={<IncomingOrders />} />
           <Route path="order/:id" element={<OrderDetail />} /> */}
+        </Route>
+
+        <Route path="/customer/*" element={<CustomersLayout />}>
+          {/* Customer pages */}
         </Route>
 
         {/* LAST CATCH */}

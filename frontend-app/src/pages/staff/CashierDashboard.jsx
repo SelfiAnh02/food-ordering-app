@@ -288,7 +288,7 @@ export default function CashierDashboard() {
       "
     >
       {/* LEFT */}
-      <div className="p-4 bg-white flex flex-col h-full overflow-hidden">
+      <div className="p-4 pb-0 bg-white flex flex-col h-full overflow-hidden">
         <CategoryTabs
           categories={categories}
           active={activeCategory}
