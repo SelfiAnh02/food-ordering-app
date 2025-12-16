@@ -255,7 +255,7 @@ export default function Cart({
         </div>
 
         {/* spacer supaya list tidak tertutup */}
-        <div className="h-16" />
+        {/* <div className="h-16" /> */}
 
         {/* MOBILE CART MODAL */}
         {openMobile && (

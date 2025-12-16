@@ -17,13 +17,21 @@ export const generateToken = async (res, userId, userRole) => {
       ? "/api/staff"
       : "/";
 
+  // res.cookie("jwt", token, {
+  //   maxAge: getMaxageFromExpiresIn("7d"),
+  //   httpOnly: true,
+  //   sameSite: "strict",
+  //   // secure should be true in production
+  //   secure: process.env.NODE_ENV !== "development",
+  //   path: cookiePath,
+  // });
+
   res.cookie("jwt", token, {
-    maxAge: getMaxageFromExpiresIn("7d"),
     httpOnly: true,
-    sameSite: "strict",
-    // secure should be true in production
-    secure: process.env.NODE_ENV !== "development",
-    path: cookiePath,
+    secure: true,
+    sameSite: "none",
+    path: "/",
+    maxAge: 7 * 24 * 60 * 60 * 1000, // ⬅️ WAJIB
   });
 
   return token;

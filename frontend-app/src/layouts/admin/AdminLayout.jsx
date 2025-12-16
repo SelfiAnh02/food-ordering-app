@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "../../components/common/Sidebar";
 import Navbar from "../../components/common/Navbar";
 import { Home, Box, Tags, Users, ShoppingCart, BarChart2 } from "lucide-react";
@@ -24,6 +24,8 @@ const menu = [
 export default function AdminLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
   const pageTitle = useMemo(() => {
     const map = {
       "/admin": "Dashboard",
@@ -34,7 +36,7 @@ export default function AdminLayout({ children }) {
       "/admin/reports": "Reports",
       "/admin/table-numbers": "Table Numbers",
     };
-    const path = location.pathname.replace(/\/+$/, "");
+    const path = (location.pathname || "/").replace(/\/+$/, "");
     const titleBase =
       map[path] ??
       (() => {
@@ -45,19 +47,17 @@ export default function AdminLayout({ children }) {
           .join(" ");
       })();
     return `${titleBase} - Admin`;
-  }, []);
+  }, [location.pathname]);
 
   const toggleSidebar = () => setSidebarOpen((s) => !s);
   const closeSidebar = () => setSidebarOpen(false);
 
   // centralized logout handler used by Navbar (and Sidebar if needed)
   const handleLogout = async () => {
-    if (typeof onLogout === "function") {
-      try {
-        await logout();
-      } catch (error) {
-        console.error("Logout error:", error);
-      }
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout error:", error);
     }
     navigate("/login");
   };

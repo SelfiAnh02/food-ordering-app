@@ -23,12 +23,19 @@ import productRouterStaff from "./routes/staff/productRoutes.js"; // Product rou
 const app = express();
 
 // Middleware
+// app.use(
+//   cors({
+//     origin: "http://localhost:5173",
+//     credentials: true,
+//   })
+// );
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "https://66vdl0vm-5173.asse.devtunnels.ms/",
     credentials: true,
   })
 );
+
 app.use(cookieParser());
 // Accept JSON/urlencoded with reasonable limit for base64 payloads (3MB)
 app.use(express.json({ limit: "3mb" }));

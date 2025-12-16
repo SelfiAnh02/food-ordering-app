@@ -28,8 +28,8 @@ export default function UsersTable({
   }
 
   return (
-    <div className="rounded-lg bg-white border border-amber-400">
-      <table className="min-w-full table-auto border-collapse rounded-lg overflow-hidden">
+    <div className="border border-amber-400 rounded-lg overflow-x-auto">
+      <table className="min-w-full table-auto border border-amber-400 rounded-lg overflow-hidden">
         <colgroup>
           <col style={{ width: "5%" }} />
           <col style={{ width: "25%" }} />
