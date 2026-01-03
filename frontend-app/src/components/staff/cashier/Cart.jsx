@@ -68,7 +68,7 @@ export default function Cart({
   return (
     <>
       {/* DESKTOP & TABLET */}
-      <div className="hidden md:flex flex-col h-full w-[320px] lg:w-[360px] bg-white shadow-md relative">
+      <div className="hidden md:flex flex-col h-full w-full bg-white shadow-md relative">
         {/* HEADER */}
         <div className="p-4 pb-2 bg-white sticky top-0 z-20 shadow-sm">
           <div className="flex items-center justify-between gap-2">
@@ -76,7 +76,7 @@ export default function Cart({
 
             {/* Order Controls */}
             <div className="flex items-center gap-2">
-              {/* Show table input for dine-in, or customer name for takeaway/delivery */}
+              {/* Show table input for dine-in; for takeaway/delivery show name only */}
               {orderType === "dine-in" ? (
                 <input
                   type="text"
@@ -86,13 +86,15 @@ export default function Cart({
                   className={`w-20 px-2 py-1 rounded-lg border text-sm text-amber-800 border-amber-400 focus:border-amber-500`}
                 />
               ) : (
-                <input
-                  type="text"
-                  placeholder="Nama Customer"
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-28 md:w-30 max-w-[160px] px-2 py-1 rounded-lg border text-sm border-amber-400 text-amber-800"
-                />
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="Nama Customer"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    className="w-28 md:w-30 max-w-[160px] px-2 py-1 rounded-lg border text-sm border-amber-400 text-amber-800"
+                  />
+                </div>
               )}
 
               <select
@@ -276,7 +278,7 @@ export default function Cart({
 
               {/* ORDER CONTROLS MOBILE */}
               <div className="p-4 flex gap-3">
-                {/* MOBILE: show table or customer name */}
+                {/* MOBILE: show table for dine-in; for others show name only */}
                 {orderType === "dine-in" ? (
                   <input
                     type="text"
@@ -286,13 +288,15 @@ export default function Cart({
                     className={`w-24 px-2 py-1 rounded-lg border text-sm text-amber-800 border-amber-400 focus:border-amber-500`}
                   />
                 ) : (
-                  <input
-                    type="text"
-                    placeholder="Nama Customer"
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    className="flex-1 min-w-0 px-2 py-1 rounded-lg border text-amber-800 border-amber-400 text-sm"
-                  />
+                  <div className="flex gap-2 w-full">
+                    <input
+                      type="text"
+                      placeholder="Nama Customer"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      className="flex-1 min-w-0 px-2 py-1 rounded-lg border text-amber-800 border-amber-400 text-sm"
+                    />
+                  </div>
                 )}
 
                 <select

@@ -13,11 +13,10 @@ const productRouter = express.Router();
 
 // Note: file uploads removed. API accepts JSON with `imageUrl`.
 
-// routes product(admin only)
+// routes product (admin only for admin namespace)
 // servis.js /api/admin/products/
-// Accept multipart/form-data for create/update (image file)
-productRouter.get("/", authStaff, getProducts);
-productRouter.get("/:id", authStaff, getProductById);
+productRouter.get("/", authAdmin, getProducts);
+productRouter.get("/:id", authAdmin, getProductById);
 productRouter.post("/create", authAdmin, createProduct);
 productRouter.put("/update/:id", authAdmin, updateProduct);
 productRouter.delete("/delete/:id", authAdmin, deleteProduct);

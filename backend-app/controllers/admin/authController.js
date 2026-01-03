@@ -59,10 +59,19 @@ export const meAdmin = async (req, res) => {
 // LOGOUT ADMIN
 // controllers/authController.js
 export const logoutAdmin = (req, res) => {
+  // clear admin-scoped cookie
   res.cookie("jwt", "", {
     httpOnly: true,
-    expires: new Date(0), // hapus cookie
+    expires: new Date(0),
     path: "/api/admin",
+    sameSite: "strict",
+    secure: process.env.NODE_ENV !== "development",
+  });
+  // also clear any legacy root-path cookie
+  res.cookie("jwt", "", {
+    httpOnly: true,
+    expires: new Date(0),
+    path: "/",
     sameSite: "strict",
     secure: process.env.NODE_ENV !== "development",
   });

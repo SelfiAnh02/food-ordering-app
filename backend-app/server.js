@@ -16,13 +16,16 @@ import staffAuthRouter from "./routes/staff/authRoutes.js"; // Staff auth
 import staffOrderRouter from "./routes/staff/orderRoutes.js";
 import categoryRouterStaff from "./routes/staff/categoryRoutes.js"; // Category routes (shared)
 import productRouterStaff from "./routes/staff/productRoutes.js"; // Product routes (shared)
+import userCategoryRouter from "./routes/user/categoryRoutes.js"; // Category routes (shared)
+import userProductRouter from "./routes/user/productRoutes.js"; // Product routes (shared)
+import userOrderRouter from "./routes/user/orderRoutes.js"; // User order routes
+import midtransRouter from "./routes/midtransRoutes.js"; // Midtrans webhook
 
 // ==============================
 // ⚙️ CONFIGURATION
 // ==============================
 const app = express();
 
-// Middleware
 // app.use(
 //   cors({
 //     origin: "http://localhost:5173",
@@ -31,7 +34,10 @@ const app = express();
 // );
 app.use(
   cors({
-    origin: "https://66vdl0vm-5173.asse.devtunnels.ms/",
+    origin: [
+      "https://66vdl0vm-5173.asse.devtunnels.ms",
+      "http://localhost:5173",
+    ],
     credentials: true,
   })
 );
@@ -64,9 +70,10 @@ app.use("/api/staff/orders", staffOrderRouter); // Manage orders
 // ==============================
 // 👤 USER / CUSTOMER API ENDPOINTS
 // ==============================
-app.use("/api/categories", categoryRouter); // View categories
-app.use("/api/products", productRouter); // View products
-app.use("/api/orders", orderRouter); // Place orders
+app.use("/api/categories", userCategoryRouter); // View categories
+app.use("/api/products", userProductRouter); // View products
+app.use("/api/orders", userOrderRouter); // Place orders
+app.use("/api/midtrans", midtransRouter); // Webhook & payment endpoints
 
 // ==============================
 // 🌯 ROOT ROUTE

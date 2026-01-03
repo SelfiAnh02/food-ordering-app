@@ -7,7 +7,7 @@ export const getProducts = async (req, res) => {
     const filter = categoryId ? { categoryId } : {};
 
     const products = await Product.find(filter)
-      .select("_id name price")
+      .select("_id name description price stock imageUrl")
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
 
@@ -36,7 +36,7 @@ export const getProducts = async (req, res) => {
 export const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id).select(
-      "id name description price "
+      "_id name description price stock imageUrl"
     );
     res
       .status(200)

@@ -4,8 +4,14 @@ import productModel from "../../models/productModel.js";
 // Create Order (Kasir)
 export const createOrderKasir = async (req, res) => {
   try {
-    const { items, orderType, tableNumber, paymentMethod, customerName } =
-      req.body;
+    const {
+      items,
+      orderType,
+      tableNumber,
+      paymentMethod,
+      customerName,
+      customerWhatsapp,
+    } = req.body;
 
     if (!items || items.length === 0) {
       return res.status(400).json({
@@ -48,6 +54,7 @@ export const createOrderKasir = async (req, res) => {
         message: "customerName is required for Takeaway & Delivery orders",
       });
     }
+    // customerWhatsapp optional for cashier transactions
 
     // Calculate total & validate stock
     let totalPrice = 0;
@@ -100,6 +107,7 @@ export const createOrderKasir = async (req, res) => {
       orderType: normalizedOrderType,
       tableNumber: dineIn ? tableNumber : null,
       customerName: takeaway || delivery ? customerName : null,
+      customerWhatsapp: takeaway || delivery ? customerWhatsapp || null : null,
       orderStatus: "pending",
       payment: {
         status: "paid",
@@ -108,6 +116,7 @@ export const createOrderKasir = async (req, res) => {
         method: paymentMethod,
         paidAt: new Date(),
       },
+      source: "cashier",
     });
 
     await newOrder.save();
@@ -147,7 +156,7 @@ export const getAllOrders = async (req, res) => {
     let orders = await orderModel
       .find(filter)
       .select(
-        "_id items totalPrice customerName tableNumber orderType orderStatus createdAt payment paymentDetails"
+        "_id items totalPrice customerName customerWhatsapp tableNumber orderType orderStatus createdAt payment paymentDetails source"
       )
       .populate({ path: "items.product", select: "name price" })
       .sort({ createdAt: -1 })
@@ -174,6 +183,7 @@ export const getAllOrders = async (req, res) => {
         paymentStatus,
         paymentId,
         paymentUrl,
+        customerWhatsapp: o.customerWhatsapp ?? null,
       };
     });
 
@@ -199,7 +209,7 @@ export const getOrderById = async (req, res) => {
     const order = await orderModel
       .findById(req.params.id)
       .select(
-        "_id items totalPrice customerName tableNumber orderType orderStatus createdAt payment paymentDetails"
+        "_id items totalPrice customerName customerWhatsapp tableNumber orderType orderStatus createdAt payment paymentDetails source"
       )
       .populate({ path: "items.product", select: "name price" })
       .lean();
@@ -235,6 +245,7 @@ export const getOrderById = async (req, res) => {
         paymentStatus,
         paymentId,
         paymentUrl,
+        customerWhatsapp: order.customerWhatsapp ?? null,
       },
     });
   } catch (error) {

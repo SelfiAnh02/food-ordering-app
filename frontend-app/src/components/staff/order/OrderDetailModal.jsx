@@ -79,6 +79,7 @@ export default function OrderDetailModal({
   const orderType = (used.orderType ?? used.type ?? "")
     .toString()
     .toLowerCase();
+  const source = (used.source ?? "").toString().toLowerCase();
 
   // Be defensive: backend may return payment info in several shapes.
   const paymentStatus = (
@@ -195,19 +196,32 @@ export default function OrderDetailModal({
 
         {/* Body */}
         <div className="p-3 flex-1 overflow-auto space-y-1">
-          {/* summary grid: show either Table (for dine-in) or Customer (for others). tighter spacing */}
-          <div className="grid grid-cols-2 gap-2 text-sm text-gray-700">
+          {/* summary grid: show Table, Customer, WhatsApp, and Source */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm text-gray-700">
             <div>
-              <div className="text-xs text-gray-500">
-                {orderType === "dine-in" ? "Table" : "Customer"}
-              </div>
+              <div className="text-xs text-gray-500">Table</div>
               <div className="font-semibold mt-0.5">
-                {orderType === "dine-in"
-                  ? used.tableNumber ?? "-"
-                  : used.customerName ?? "-"}
+                {used.tableNumber ?? "-"}
               </div>
             </div>
-            <div />
+            <div>
+              <div className="text-xs text-gray-500">Customer</div>
+              <div className="font-semibold mt-0.5">
+                {used.customerName ?? "-"}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-500">WhatsApp</div>
+              <div className="font-semibold mt-0.5">
+                {used.customerWhatsapp ?? used.whatsapp ?? "-"}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-500">Source</div>
+              <div className="font-semibold mt-0.5">
+                {source ? source.toUpperCase() : "-"}
+              </div>
+            </div>
           </div>
 
           {/* items */}

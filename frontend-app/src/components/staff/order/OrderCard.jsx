@@ -1,4 +1,3 @@
-import React from "react";
 import { Package, Clock } from "lucide-react";
 
 /**
@@ -55,8 +54,14 @@ export default function OrderCard({
 
   const orderTypeRaw = (order?.orderType ?? order?.type ?? "").toString();
   const orderType = orderTypeRaw.toLowerCase();
-  const table = order?.tableNumber ?? order?.table ?? "-";
-  const customer = order?.customerName ?? order?.customer ?? "-";
+  const table = order?.tableNumber ?? order?.table ?? "";
+  const customer = order?.customerName ?? order?.customer ?? "";
+  const whatsapp =
+    order?.customerWhatsapp ??
+    order?.whatsapp ??
+    order?.customerWhatsappNumber ??
+    "";
+  // source shown only in detail modal per request
 
   // colors for order type only (status badge removed as requested)
   const typeColor = (t) => {
@@ -68,6 +73,7 @@ export default function OrderCard({
       return "bg-indigo-50 text-indigo-800 border border-indigo-100";
     return "bg-gray-50 text-gray-700 border border-gray-100";
   };
+  // removed source badge on card
 
   // determine primary action label & handler (for right button)
   const rightButton = (() => {
@@ -111,6 +117,7 @@ export default function OrderCard({
           <Clock size={14} />
           <span>{timeAgo ?? "-"}</span>
         </div>
+        {/* source hidden on card, shown in detail modal */}
       </div>
 
       {/* ITEM COUNT */}
@@ -156,18 +163,24 @@ export default function OrderCard({
         </div>
       </div>
 
-      {/* Table / Customer line with total aligned right */}
+      {/* Summary line: show only the available identity (Name > Table > WA) */}
       <div className="flex items-center justify-between text-sm text-gray-600">
-        <div>
-          {orderType === "dine-in" ? (
+        <div className="min-w-0 truncate">
+          {customer ? (
+            <span>
+              Customer: <span className="font-semibold">{customer}</span>
+            </span>
+          ) : table ? (
             <span>
               Table:{" "}
               <span className="font-semibold text-amber-800">{table}</span>
             </span>
-          ) : (
+          ) : whatsapp ? (
             <span>
-              Customer: <span className="font-semibold">{customer}</span>
+              WA: <span className="font-semibold">{whatsapp}</span>
             </span>
+          ) : (
+            <span className="text-gray-400">-</span>
           )}
         </div>
 

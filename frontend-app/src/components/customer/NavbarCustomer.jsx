@@ -4,23 +4,16 @@ export default function NavbarCustomer({
   logo,
   brandLine1 = "Sa'jane",
   brandLine2 = "Tea & Coffee Bar",
-  tableNumber = "3",
-  showHome = true,
+  tableNumber = "-",
   onLogoClick,
 }) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-transparent px-0 pt-0 pb-0">
-      <div className="max-w-4xl mx-auto">
+      <div className="w-full px-0">
         <div
-          className="relative bg-white border-b border-amber-400 shadow-md p-5 flex items-center gap-5 overflow-hidden rounded-b-2xl"
+          className="relative bg-white border-b border-amber-400 shadow-md p-2 flex items-center gap-5 overflow-hidden rounded-b-2xl"
           style={{ minHeight: 110 }}
         >
-          {/* HOME label placed inside card so header is flush to top */}
-          {showHome && (
-            <div className="absolute left-4 top-3 text-xs text-gray-500">
-              HOME
-            </div>
-          )}
           <button
             type="button"
             onClick={onLogoClick}

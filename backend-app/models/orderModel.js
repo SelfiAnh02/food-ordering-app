@@ -51,6 +51,11 @@ const orderSchema = new mongoose.Schema(
       default: "Dine-In", // Dine-In, Takeaway, Delivery
     },
 
+    // nomor WhatsApp customer
+    customerWhatsapp: {
+      type: String,
+      required: false,
+    },
     payment: {
       status: {
         type: String,
@@ -59,11 +64,20 @@ const orderSchema = new mongoose.Schema(
       },
       paymentId: String,
       paymentUrl: String,
+      // opsional: simpan token Snap untuk referensi
+      snapToken: String,
     },
 
     paymentDetails: {
-      method: { type: String, enum: ["cash", "qris", "edc", "transfer"] },
+      // accept any payment method string (Midtrans returns values like gopay, qris, bank_transfer, credit_card)
+      method: { type: String },
       paidAt: { type: Date },
+    },
+    // Origin of the order: created by customer via app/Snap or by cashier
+    source: {
+      type: String,
+      enum: ["customer", "cashier"],
+      default: "customer",
     },
   },
   { timestamps: true }

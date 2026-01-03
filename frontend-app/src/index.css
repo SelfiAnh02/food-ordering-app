@@ -23,6 +23,19 @@ body {
   font-family: "Inter", sans-serif;
 }
 
+/* ================================
+   SCROLLBAR UTILITIES
+==================================*/
+/* Hide scrollbars where applied while preserving scroll behavior */
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge legacy */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
 /* Small utility for rounded box borders */
 .panel {
   background: #fff;

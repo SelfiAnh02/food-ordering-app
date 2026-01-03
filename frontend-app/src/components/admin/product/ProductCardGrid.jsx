@@ -1,5 +1,7 @@
 // src/components/admin/product/ProductCardGrid.jsx
 import { formatPrice } from "../../../utils/productUtils";
+import { Eye, Trash2, Pencil } from "lucide-react";
+import IconButton from "../../common/IconButton";
 
 export default function ProductCardGrid({
   products = [],
@@ -8,7 +10,7 @@ export default function ProductCardGrid({
   onDelete,
 }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
       {products.map((p) => {
         const categoryLabel =
           p.categoryName ??
@@ -17,22 +19,24 @@ export default function ProductCardGrid({
         return (
           <div
             key={p.id}
-            className="bg-white border  border-amber-400 rounded-lg shadow-sm overflow-hidden"
+            className="bg-white border border-amber-400 rounded-lg shadow-sm overflow-hidden p-3 flex flex-col"
           >
-            {p.image ? (
-              <img
-                src={p.image}
-                alt={p.name}
-                className="w-full h-40 object-cover"
-              />
-            ) : (
-              <div className="w-full h-40 bg-gray-50 flex items-center justify-center text-gray-400">
-                No image
-              </div>
-            )}
+            <div className="w-full aspect-square border border-amber-300 rounded-lg bg-gray-100 overflow-hidden flex items-center justify-center">
+              {p.image ? (
+                <img
+                  src={p.image}
+                  alt={p.name}
+                  className="w-full h-full object-cover object-center"
+                />
+              ) : (
+                <div className="text-gray-400 text-sm flex items-center justify-center h-full">
+                  No Image
+                </div>
+              )}
+            </div>
 
-            <div className="p-4">
-              <div className="flex items-start justify-between">
+            <div className="pt-3 px-1 pb-0">
+              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-1">
                 <div>
                   <div className="text-lg font-medium text-amber-800">
                     {p.name}
@@ -42,7 +46,7 @@ export default function ProductCardGrid({
                   </div>
                 </div>
 
-                <div className="text-sm font-semibold text-amber-600">
+                <div className="text-sm font-semibold text-amber-600 mt-1 lg:mt-0">
                   {formatPrice(p.price)}
                 </div>
               </div>
@@ -56,25 +60,28 @@ export default function ProductCardGrid({
                 </div>
               </div>
 
-              <div className="mt-4 flex gap-2">
-                <button
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <IconButton
+                  title="Lihat"
                   onClick={() => onView(p)}
-                  className="flex-1 py-2 border border-amber-400 rounded-lg text-amber-800"
+                  className="border border-amber-400 bg-white flex items-center justify-center w-10 h-8 sm:w-14 sm:h-10 md:w-16 md:h-10"
                 >
-                  View
-                </button>
-                <button
+                  <Eye size={14} />
+                </IconButton>
+                <IconButton
+                  title="Edit"
                   onClick={() => onEdit(p)}
-                  className="px-3 py-2 border border-amber-400 rounded-lg text-amber-800"
+                  className="border border-amber-400 bg-white flex items-center justify-center w-10 h-8 sm:w-14 sm:h-10 md:w-16 md:h-10"
                 >
-                  Edit
-                </button>
-                <button
+                  <Pencil size={14} />
+                </IconButton>
+                <IconButton
+                  title="Hapus"
                   onClick={() => onDelete(p)}
-                  className="px-3 py-2 border rounded-lg text-red-600"
+                  className="text-red-600 flex items-center justify-center w-10 h-8 sm:w-14 sm:h-10 md:w-16 md:h-10"
                 >
-                  Delete
-                </button>
+                  <Trash2 size={14} />
+                </IconButton>
               </div>
             </div>
           </div>

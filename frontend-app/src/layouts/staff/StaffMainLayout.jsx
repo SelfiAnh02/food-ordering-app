@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "../../components/common/Sidebar";
 import Navbar from "../../components/common/Navbar";
-import { BarChart2, Bell, List, ShoppingCart } from "lucide-react";
+import { BarChart2, List, ShoppingCart } from "lucide-react";
 import { staffLogout } from "../../services/staff/authService";
 
 const menu = [

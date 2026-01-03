@@ -193,7 +193,7 @@ export default function ProductForm({
             className="text-amber-800"
           />
           {form.image ? (
-            <div className="w-24 h-24 border border-amber-400 rounded overflow-hidden">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 border border-amber-400 rounded overflow-hidden">
               <img
                 src={form.image}
                 alt="preview"
@@ -201,7 +201,7 @@ export default function ProductForm({
               />
             </div>
           ) : (
-            <div className="w-24 h-24 border border-amber-400 rounded flex items-center justify-center text-sm text-amber-400">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 border border-amber-400 rounded flex items-center justify-center text-sm text-amber-400">
               No image
             </div>
           )}

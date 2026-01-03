@@ -17,7 +17,7 @@ export default function CartItem({
 
   return (
     <div
-      className="flex items-center justify-between p-2 rounded-lg border border-amber-100 bg-amber-50/40"
+      className="w-full flex items-center justify-between p-3 rounded-lg border border-amber-100 bg-amber-50/40"
       // jangan buat seluruh row clickable (agar accidental click sedikit berkurang)
       // jika mau tetap clickable, kamu bisa menambahkan onClick={() => onOpenDetails && onOpenDetails(item)}
     >
@@ -41,11 +41,11 @@ export default function CartItem({
           {/* tombol edit kecil untuk buka detail/notes */}
           <button
             onClick={handleOpen}
-            className="ml-2 p-1 rounded hover:bg-amber-100"
+            className="ml-2 p-2 rounded hover:bg-amber-100"
             title="Edit catatan item"
             aria-label={`Edit catatan untuk ${item.name}`}
           >
-            <Edit3 size={14} />
+            <Edit3 size={15} />
           </button>
         </div>
       </div>
@@ -55,11 +55,11 @@ export default function CartItem({
         onClick={(e) => e.stopPropagation()}
       >
         <button
-          onClick={onMinus}
-          className="p-1 rounded border hover:bg-amber-100"
+          onClick={() => ((item?.qty ?? 0) <= 1 ? onRemove?.() : onMinus?.())}
+          className="p-2 rounded border hover:bg-amber-100"
           aria-label={`Kurangi ${item.name}`}
         >
-          <Minus size={14} />
+          <Minus size={8} />
         </button>
 
         <span className="text-sm font-semibold min-w-[20px] text-center">

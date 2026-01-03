@@ -102,8 +102,9 @@ export default function AdminLayout({ children }) {
           flex-1 
           pt-18
           w-full 
-          overflow-y-auto 
-          overflow-x-hidden 
+          min-h-0
+          overflow-y-auto
+          overflow-x-hidden
           px-2 
           pb-2
         "

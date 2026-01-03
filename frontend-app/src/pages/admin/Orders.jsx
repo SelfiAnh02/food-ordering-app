@@ -57,8 +57,8 @@ export default function OrdersPage() {
   };
 
   return (
-    <div className="flex-1 h-full bg-white rounded-lg shadow-sm border border-amber-200 shadow-amber-300 overflow-visible lg:overflow-hidden lg:max-h-[calc(100vh-4rem)]">
-      <div className="p-4 sm:p-6 flex flex-col min-h-0 overflow-visible lg:overflow-hidden">
+    <div className="flex-1 bg-white rounded-lg shadow-sm border border-amber-200 shadow-amber-300 overflow-visible lg:overflow-hidden min-h-[calc(100vh-4rem)] lg:max-h-[calc(100vh-4rem)]">
+      <div className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2 flex flex-col min-h-0 overflow-visible lg:overflow-hidden">
         {/* Stats — will show fallback values if loading or stats null */}
         <OrderStatsCard stats={stats} />
 
@@ -96,7 +96,7 @@ export default function OrdersPage() {
 
           {/* Right column: top products (scrollable on lg) */}
           <div className="lg:col-span-1">
-            <div className="min-h-0 lg:max-h-[65vh] lg:overflow-auto overflow-visible">
+            <div className="min-h-0 lg:max-h-[65vh] lg:overflow-auto overflow-visible hide-scrollbar">
               <OrderTopProducts
                 topProducts={topProducts ?? stats?.topProducts ?? []}
               />

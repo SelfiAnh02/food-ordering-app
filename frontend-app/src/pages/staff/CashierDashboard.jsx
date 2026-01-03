@@ -8,7 +8,7 @@ import Cart from "../../components/staff/cashier/Cart";
 import PaymentMethodModal from "../../components/staff/cashier/PaymentMethodModal";
 import ReceiptModal from "../../components/staff/cashier/ReceiptModal";
 
-import { createOrder, getOrderById } from "../../services/staff/orderService";
+import useOrders from "../../hooks/staff/useOrders";
 
 // Backend mapping (move outside component so they're stable references)
 const ORDER_TYPE_MAP = {
@@ -40,6 +40,8 @@ export default function CashierDashboard() {
     refreshProducts,
   } = useProducts();
 
+  const { createNewOrder, loadOrderDetail } = useOrders();
+
   const {
     items,
     addToCart,
@@ -52,6 +54,7 @@ export default function CashierDashboard() {
   } = useCart();
 
   const [submitting, setSubmitting] = useState(false);
+  const [search, setSearch] = useState("");
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [receiptOrder, setReceiptOrder] = useState(null);
@@ -115,12 +118,14 @@ export default function CashierDashboard() {
 
       // Takeaway / Delivery must have customerName
       if (
-        (incomingOrderType === "takeaway" ||
-          incomingOrderType === "delivery") &&
-        !incomingCustomerName
+        incomingOrderType === "takeaway" ||
+        incomingOrderType === "delivery"
       ) {
-        window.alert("Nama customer wajib untuk Takeaway & Delivery.");
-        return;
+        if (!incomingCustomerName) {
+          window.alert("Nama customer wajib untuk Takeaway & Delivery.");
+          return;
+        }
+        // WhatsApp removed for cashier
       }
 
       setOrderTypeState(incomingOrderType);
@@ -189,9 +194,10 @@ export default function CashierDashboard() {
           ...(mappedOrderType !== "Dine-In" && customerNameState
             ? { customerName: customerNameState }
             : {}),
+          // WhatsApp not included for cashier flow
         };
 
-        const res = await createOrder(payload);
+        const res = await createNewOrder(payload);
         const data = res?.data ?? res;
         const success = data?.success ?? res?.status === 201;
 
@@ -205,9 +211,7 @@ export default function CashierDashboard() {
             const idForFetch =
               created?._id ?? created?.id ?? created?.orderId ?? null;
             if (idForFetch) {
-              const fullRes = await getOrderById(idForFetch);
-              // extract inner payload: support { data: { ... } } and { data: { data: {...} } }
-              const full = fullRes?.data?.data ?? fullRes?.data ?? fullRes;
+              const full = await loadOrderDetail(idForFetch);
               if (full) created = full;
             }
           } catch (err) {
@@ -236,6 +240,7 @@ export default function CashierDashboard() {
           setOrderTypeState("");
           setTableNumberState("");
           setCustomerNameState("");
+          // no WhatsApp state to reset
 
           // transaction success is now shown inside the ReceiptModal
         } else {
@@ -259,6 +264,8 @@ export default function CashierDashboard() {
       customerNameState,
       refreshProducts,
       clearCart,
+      createNewOrder,
+      loadOrderDetail,
     ]
   );
 
@@ -269,6 +276,16 @@ export default function CashierDashboard() {
       </div>
     );
   }
+
+  // Filter by search term on top of category filter handled in hook
+  const q = (search || "").toLowerCase().trim();
+  const displayProducts = q
+    ? products.filter((p) => {
+        const name = (p.name || "").toLowerCase();
+        const desc = (p.description || "").toLowerCase();
+        return name.includes(q) || desc.includes(q);
+      })
+    : products;
 
   return (
     <div
@@ -293,6 +310,8 @@ export default function CashierDashboard() {
           categories={categories}
           active={activeCategory}
           onChange={setActiveCategory}
+          search={search}
+          onSearchChange={(e) => setSearch(e.target.value)}
         />
 
         {!Array.isArray(products) || products.length === 0 ? (
@@ -310,8 +329,18 @@ export default function CashierDashboard() {
             </div>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto mt-2 hidden-scrollbar pb-24">
-            <ProductList products={products} onSelect={handleSelectProduct} />
+          <div
+            className="flex-1 overflow-y-auto mt-2 pb-24 [&::-webkit-scrollbar]:hidden"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            <ProductList
+              products={displayProducts}
+              onSelect={handleSelectProduct}
+              cartItems={items}
+              onIncrease={increaseQty}
+              onDecrease={decreaseQty}
+              onRemove={removeItem}
+            />
           </div>
         )}
       </div>

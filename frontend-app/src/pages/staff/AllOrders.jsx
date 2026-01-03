@@ -1,12 +1,49 @@
-// src/pages/staff/AllOrders.jsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import useOrders from "../../hooks/staff/useOrders";
+import { pusher } from "../../utils/pusher";
 import OrderCard from "../../components/staff/order/OrderCard";
 import OrderDetailModal from "../../components/staff/order/OrderDetailModal";
+import usePushNotification from "../../hooks/usePushNotification";
+
+const NOTIF_SOUND = "/notification.mp3";
 
 export default function AllOrders() {
   const { orders, loadOrders, loadOrderDetail, updateStatus, loading, error } =
     useOrders();
+  const lastCustomerOrderIdRef = useRef(null);
+  const audioRef = useRef(null);
+  const [userInteracted, setUserInteracted] = useState(false);
+  useEffect(() => {
+    const handler = () => setUserInteracted(true);
+    window.addEventListener("click", handler, { once: true });
+    return () => window.removeEventListener("click", handler);
+  }, []);
+
+  // Integrasi push notification (FCM)
+  usePushNotification(() => {
+    // Tampilkan notifikasi toast atau suara jika ingin
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {});
+    }
+  });
+
+  // Subscribe to Pusher for real-time order notifications
+  useEffect(() => {
+    const channel = pusher.subscribe("staff-orders");
+    const handler = () => {
+      if (userInteracted && audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch(() => {});
+      }
+      loadOrders();
+    };
+    channel.bind("order-updated", handler);
+    return () => {
+      channel.unbind("order-updated", handler);
+      channel.unsubscribe();
+    };
+  }, [userInteracted, loadOrders]);
 
   const [query, setQuery] = useState("");
   const [filterType, setFilterType] = useState("");
@@ -15,13 +52,73 @@ export default function AllOrders() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [detailOpen, setDetailOpen] = useState(false);
 
+  // Initialize orders and last customer order id on first mount
   useEffect(() => {
-    loadOrders().catch(() => {});
+    loadOrders()
+      .then(() => {
+        const currentOrders = orders || [];
+        const customerOrders = currentOrders
+          .filter(
+            (o) =>
+              (o.source ?? o.orderSource ?? "customer")
+                .toString()
+                .toLowerCase() === "customer"
+          )
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt ?? b.created_at ?? 0) -
+              new Date(a.createdAt ?? a.created_at ?? 0)
+          );
+        const latestId =
+          customerOrders[0]?._id ?? customerOrders[0]?.id ?? null;
+        lastCustomerOrderIdRef.current = latestId;
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadOrders]);
+
+  // Polling to reflect new customer-paid orders that arrive via webhook
+  useEffect(() => {
+    const id = setInterval(async () => {
+      // prevCustomerOrders removed (was unused)
+      // prevLatestId removed (was unused)
+
+      await loadOrders();
+      setTimeout(() => {
+        const newOrders = orders || [];
+        const newCustomerOrders = newOrders
+          .filter(
+            (o) =>
+              (o.source ?? o.orderSource ?? "customer")
+                .toString()
+                .toLowerCase() === "customer"
+          )
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt ?? b.created_at ?? 0) -
+              new Date(a.createdAt ?? a.created_at ?? 0)
+          );
+        const newLatestId =
+          newCustomerOrders[0]?._id ?? newCustomerOrders[0]?.id ?? null;
+        if (
+          userInteracted &&
+          newLatestId &&
+          newLatestId !== lastCustomerOrderIdRef.current &&
+          lastCustomerOrderIdRef.current !== null
+        ) {
+          if (audioRef.current) {
+            audioRef.current.currentTime = 0;
+            audioRef.current.play().catch(() => {});
+          }
+        }
+        lastCustomerOrderIdRef.current = newLatestId;
+      }, 100);
+    }, 5000);
+    return () => clearInterval(id);
+  }, [loadOrders, orders, userInteracted]);
 
   const filtered = useMemo(() => {
     return (orders || []).filter((o) => {
-      // single-day filter (if provided)
       if (date) {
         const created = new Date(
           o.createdAt ?? o.created_at ?? o.created ?? null
@@ -33,7 +130,6 @@ export default function AllOrders() {
       const statusLocal = ((o.orderStatus ?? o.status) || "")
         .toString()
         .toLowerCase();
-      // By default (no filterStatus selected) hide completed/delivered orders
       if (!filterStatus && statusLocal === "delivered") return false;
       const q = (query || "").trim().toLowerCase();
       if (q) {
@@ -80,7 +176,6 @@ export default function AllOrders() {
 
   async function handleUpdateStatus(orderId, newStatus) {
     try {
-      // normalize payload to { status }
       await updateStatus(
         orderId,
         typeof newStatus === "string" ? { status: newStatus } : newStatus
@@ -94,6 +189,8 @@ export default function AllOrders() {
 
   return (
     <div className="p-4 rounded-lg shadow-sm border border-amber-200 shadow-amber-300 bg-white h-full overflow-auto">
+      {/* Audio element for notification */}
+      <audio ref={audioRef} src={NOTIF_SOUND} preload="auto" />
       <div className="flex flex-col md:flex-row md:items-center gap-3 mb-4">
         <input
           placeholder="Search by id, customer, or product..."
@@ -188,3 +285,4 @@ export default function AllOrders() {
     </div>
   );
 }
+// ...existing code...

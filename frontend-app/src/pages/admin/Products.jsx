@@ -131,7 +131,7 @@ export default function Products() {
             <div className="ml-auto sm:ml-0">
               <button
                 onClick={() => openModal("add")}
-                className="px-3 py-2 bg-amber-600 text-white rounded-md text-sm hover:bg-amber-700 transition shadow-sm"
+                className="px-3 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 transition shadow-sm"
               >
                 Add Product
               </button>
@@ -280,7 +280,6 @@ export default function Products() {
         {modal.open && modal.mode === "edit" && modal.product && (
           <Modal
             title={`Edit Product #${String(modal.product.id).slice(0, 8)}`}
-            onClose={closeModal}
           >
             <div className="max-w-lg w-full">
               <div className="flex justify-between items-center mb-2">

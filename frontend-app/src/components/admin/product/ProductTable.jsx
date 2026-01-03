@@ -68,7 +68,9 @@ export default function ProductTable({
                       </div>
                     )}
                   </td>
-                  <td className={`${cellPad} text-center font-semibold`}>
+                  <td
+                    className={`${cellPad} text-amber-600 text-center font-semibold`}
+                  >
                     {formatPrice(p.price)}
                   </td>
                   <td className={`${cellPad} text-center`}>{categoryLabel}</td>

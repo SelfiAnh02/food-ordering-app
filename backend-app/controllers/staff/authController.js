@@ -60,10 +60,19 @@ export const getStaffMe = async (req, res) => {
 };
 
 export const logoutStaff = (req, res) => {
+  // clear staff-scoped cookie
   res.cookie("jwt", "", {
     httpOnly: true,
-    expires: new Date(0), // hapus cookie
+    expires: new Date(0),
     path: "/api/staff",
+    secure: process.env.NODE_ENV !== "development",
+    sameSite: "strict",
+  });
+  // also clear any legacy root-path cookie
+  res.cookie("jwt", "", {
+    httpOnly: true,
+    expires: new Date(0),
+    path: "/",
     secure: process.env.NODE_ENV !== "development",
     sameSite: "strict",
   });
